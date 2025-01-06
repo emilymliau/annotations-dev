@@ -154,7 +154,8 @@ task vepAnnotateMT {
 
     output {
         # String vep_mt_uri = read_lines('mt_uri.txt')[0]
-        File vep_vcf_file = glob("*.vcf.bgz")[0]
+        Array[File] vep_vcf_files = glob("*.vcf.bgz")
+        File vep_vcf_file = select_first(vep_vcf_files)
         File hail_log = "hail_log.txt"
     }
 }
