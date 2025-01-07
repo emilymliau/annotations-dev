@@ -2,7 +2,7 @@ version 1.0
     
 import "mergeSplitVCF.wdl" as mergeSplitVCF
 import "mergeVCFs.wdl" as mergeVCFs
-import "wes-denovo-helpers.wdl" as helpers
+import "helpers.wdl" as helpers
 
 struct RuntimeAttr {
     Float? mem_gb
@@ -17,8 +17,8 @@ workflow vepAnnotateHailMT {
 
     input {
         String? mt_uri
-        String vep_annotate_hail_mt_script
-        String split_vcf_hail_script
+        String vep_annotate_hail_mt_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/vep_annotate_hail_mt_v0.1.py"
+        String split_vcf_hail_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/split_vcf_hail.py"
         File hg38_fasta
         File hg38_fasta_fai
         File human_ancestor_fa
