@@ -34,7 +34,7 @@ workflow vepAnnotateHailMT {
         String vep_hail_docker
         String sv_base_mini_docker
 
-        String vep_annotate_hail_mt_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/el_dev/scripts/vep_annotate_hail_mt_v0.1_output_vcf.py"
+        String vep_annotate_hail_mt_script = "https://raw.githubusercontent.com/emilymliau/el-annotations/refs/heads/main/scripts/vep_annotate_hail_mt_v0.1_output_vcf.py"
         String split_vcf_hail_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/split_vcf_hail.py"
 
         Boolean split_by_chromosome
