@@ -79,6 +79,7 @@ mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
 # filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
 filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
+# pd.Series([filename]).to_csv('mt_uri.txt',index=False, header=None)
 pd.Series([filename]).to_csv('vcf_uri.txt',index=False, header=None)
 
 # mt.write(filename, overwrite=True)
