@@ -5,11 +5,27 @@ import pandas as pd
 import sys
 import os
 import datetime
+import argparse
 
-mt_uri = sys.argv[1]
-bucket_id = sys.argv[2]
-cores = sys.argv[3]  # string
-mem = int(np.floor(float(sys.argv[4])))
+# mt_uri = sys.argv[1]
+# bucket_id = sys.argv[2]
+# cores = sys.argv[3]  # string
+# mem = int(np.floor(float(sys.argv[4])))
+
+parser = argparse.ArgumentParser(description='Parse arguments')
+parser.add_argument('-i', dest='mt_uri', help='Input MT file')
+parser.add_argument('-o', dest='vep_annotated_vcf_name', help='Output filename')
+parser.add_argument('--cores', dest='cores', help='CPU cores')
+parser.add_argument('--mem', dest='mem', help='Memory')
+parser.add_argument('--project-id', dest='project_id', help='Google Project ID')
+
+args = parser.parse_args()
+
+mt_uri = args.mt_uri
+vep_annotated_vcf_name = args.vep_annotated_vcf_name
+cores = args.cores  # string
+mem = int(np.floor(float(args.mem)))
+project_id = args.project_id
 
 prefix = os.path.basename(mt_uri).split('.mt')[0]
 
@@ -62,7 +78,7 @@ mt = hl.vep(mt, config='vep_config.json', csq=True, tolerate_parse_error=True)
 mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
 # filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
-filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
+filename = f"{project_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
 pd.Series([filename]).to_csv('vcf_uri.txt',index=False, header=None)
 
 # mt.write(filename, overwrite=True)
