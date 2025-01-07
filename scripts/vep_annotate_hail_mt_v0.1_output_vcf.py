@@ -82,4 +82,4 @@ filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strft
 pd.Series([filename]).to_csv('vcf_uri.txt',index=False, header=None)
 
 # mt.write(filename, overwrite=True)
-hl.export_vcf(mt, filename, overwrite=True)
+hl.export_vcf(mt, filename, parallel='header_per_shard')
