@@ -159,7 +159,7 @@ task vepAnnotateMT {
         }' > vep_config.json
 
         curl ~{vep_annotate_hail_mt_script} > vep_annotate.py
-        python3.9 vep_annotate.py -i ~{mt_uri} -o ~{bucket_id} --cores ~{cpu_cores} --mem ~{memory} --bucket-id ~{bucket_id}
+        python3.9 vep_annotate.py -i ~{mt_uri} -o ~{vep_annotated_vcf_name} --cores ~{cpu_cores} --mem ~{memory} --bucket-id ~{bucket_id}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
