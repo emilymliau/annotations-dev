@@ -14,18 +14,18 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Parse arguments')
 parser.add_argument('-i', dest='mt_uri', help='Input MT file')
-parser.add_argument('-o', dest='vep_annotated_vcf_name', help='Output filename')
+# parser.add_argument('-o', dest='vep_annotated_vcf_name', help='Output filename')
+parser.add_argument('--bucket-id', dest='bucket_id', help='Google Project ID')
 parser.add_argument('--cores', dest='cores', help='CPU cores')
 parser.add_argument('--mem', dest='mem', help='Memory')
-parser.add_argument('--bucket-id', dest='bucket_id', help='Google Project ID')
 
 args = parser.parse_args()
 
 mt_uri = args.mt_uri
-vep_annotated_vcf_name = args.vep_annotated_vcf_name
+bucket_id = args.bucket_id
+# vep_annotated_vcf_name = args.vep_annotated_vcf_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
-bucket_id = args.bucket_id
 
 prefix = os.path.basename(mt_uri).split('.mt')[0]
 
