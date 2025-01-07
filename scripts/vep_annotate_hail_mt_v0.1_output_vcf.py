@@ -17,7 +17,7 @@ parser.add_argument('-i', dest='mt_uri', help='Input MT file')
 parser.add_argument('-o', dest='vep_annotated_vcf_name', help='Output filename')
 parser.add_argument('--cores', dest='cores', help='CPU cores')
 parser.add_argument('--mem', dest='mem', help='Memory')
-parser.add_argument('--project-id', dest='project_id', help='Google Project ID')
+parser.add_argument('--bucket-id', dest='bucket_id', help='Google Project ID')
 
 args = parser.parse_args()
 
@@ -25,7 +25,7 @@ mt_uri = args.mt_uri
 vep_annotated_vcf_name = args.vep_annotated_vcf_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
-project_id = args.project_id
+bucket_id = args.bucket_id
 
 prefix = os.path.basename(mt_uri).split('.mt')[0]
 
@@ -78,7 +78,7 @@ mt = hl.vep(mt, config='vep_config.json', csq=True, tolerate_parse_error=True)
 mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
 # filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
-filename = f"{project_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
+filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
 pd.Series([filename]).to_csv('vcf_uri.txt',index=False, header=None)
 
 # mt.write(filename, overwrite=True)

@@ -27,7 +27,7 @@ workflow vepAnnotateHailMT {
         File hg38_vep_cache
 
         File loeuf_data
-        String project_id
+        String bucket_id
 
         String cohort_prefix
         String hail_docker
@@ -51,7 +51,7 @@ workflow vepAnnotateHailMT {
     #     call scatterMT.scatterMT as scatterMT {
     #         input:
     #             mt_uris=[select_first([mt_uri])],
-    #             project_id=project_id,
+    #             bucket_id=bucket_id,
     #             hail_docker=hail_docker
     #     }
     # }
@@ -71,7 +71,7 @@ workflow vepAnnotateHailMT {
                 hg38_vep_cache=hg38_vep_cache,
                 loeuf_data=loeuf_data,
                 vep_hail_docker=vep_hail_docker,
-                project_id=project_id,
+                bucket_id=bucket_id,
                 runtime_attr_override=runtime_attr_vep_annotate
         }
     }
@@ -93,7 +93,7 @@ task vepAnnotateMT {
         File hg38_vep_cache
 
         File loeuf_data
-        String project_id
+        String bucket_id
 
         String vep_hail_docker
         String vep_annotate_hail_mt_script
@@ -159,7 +159,7 @@ task vepAnnotateMT {
         }' > vep_config.json
 
         curl ~{vep_annotate_hail_mt_script} > vep_annotate.py
-        python3.9 vep_annotate.py -i ~{mt_uri} -o ~{project_id} --cores ~{cpu_cores} --mem ~{memory} --project-id ~{project_id}
+        python3.9 vep_annotate.py -i ~{mt_uri} -o ~{bucket_id} --cores ~{cpu_cores} --mem ~{memory} --bucket-id ~{bucket_id}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
