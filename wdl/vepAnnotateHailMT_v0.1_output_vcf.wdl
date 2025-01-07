@@ -2,7 +2,7 @@ version 1.0
     
 import "mergeSplitVCF.wdl" as mergeSplitVCF
 import "mergeVCFs.wdl" as mergeVCFs
-import "helpers.wdl" as helpers
+import "wes-denovo-helpers.wdl" as helpers
 
 struct RuntimeAttr {
     Float? mem_gb
@@ -17,7 +17,8 @@ workflow vepAnnotateHailMT {
 
     input {
         String? mt_uri
-
+        String vep_annotate_hail_mt_script
+        String split_vcf_hail_script
         File hg38_fasta
         File hg38_fasta_fai
         File human_ancestor_fa
@@ -25,24 +26,16 @@ workflow vepAnnotateHailMT {
         File top_level_fa
         File gerp_conservation_scores
         File hg38_vep_cache
-
         File loeuf_data
         String bucket_id
-
         String cohort_prefix
         String hail_docker
         String vep_hail_docker
         String sv_base_mini_docker
-
-        String vep_annotate_hail_mt_script = "https://raw.githubusercontent.com/emilymliau/el-annotations/refs/heads/main/scripts/vep_annotate_hail_mt_v0.1_output_vcf.py"
-        String split_vcf_hail_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/split_vcf_hail.py"
-
         Boolean split_by_chromosome
         Boolean split_into_shards 
-        Array[String]? row_fields_to_keep=[false]
-
         Array[String]? mt_shards  # if scatterMT.wdl already run before VEP
-
+        Array[String]? row_fields_to_keep=[false]
         RuntimeAttr? runtime_attr_merge_vcfs
         RuntimeAttr? runtime_attr_vep_annotate
     }
@@ -59,10 +52,10 @@ workflow vepAnnotateHailMT {
     # Array[String] mt_shards_ = select_first([scatterMT.mt_shards, mt_shards])
     Array[String] mt_shards_ = select_first([mt_shards])
 
-    scatter (mt_shard in mt_shards_) {
+    scatter (shard in mt_shards_) {
         call vepAnnotateMT {
             input:
-                mt_uri=mt_shard,
+                mt_uri=shard,
                 vep_annotate_hail_mt_script=vep_annotate_hail_mt_script,
                 top_level_fa=top_level_fa,
                 human_ancestor_fa=human_ancestor_fa,
@@ -78,26 +71,22 @@ workflow vepAnnotateHailMT {
 
     output {
         # Array[String] vep_mt_uris = vepAnnotateMT.vep_mt_uri
-        Array[File] vep_vcf_files = vepAnnotateMT.vep_vcf_file
+        Array[String] vep_vcf_files = vepAnnotateMT.vep_vcf_uri
     }
 }   
 
 task vepAnnotateMT {
     input {
         String mt_uri
-
+        String vep_annotate_hail_mt_script
         File top_level_fa
         File human_ancestor_fa
         File human_ancestor_fa_fai
         File gerp_conservation_scores
         File hg38_vep_cache
-
         File loeuf_data
-        String bucket_id
-
         String vep_hail_docker
-        String vep_annotate_hail_mt_script
-        
+        String bucket_id
         RuntimeAttr? runtime_attr_override
     }
 
@@ -159,14 +148,13 @@ task vepAnnotateMT {
         }' > vep_config.json
 
         curl ~{vep_annotate_hail_mt_script} > vep_annotate.py
-        python3.9 vep_annotate.py -i ~{mt_uri} --bucket-id ~{bucket_id} --cores ~{cpu_cores} --mem ~{memory}
+        python3.9 vep_annotate.py ~{mt_uri} ~{bucket_id} ~{cpu_cores} ~{memory}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
     output {
         # String vep_mt_uri = read_lines('mt_uri.txt')[0]
-        Array[File] vep_vcf_files = glob("*.vcf.bgz")
-        File vep_vcf_file = select_first(vep_vcf_files)
+        String vep_vcf_uri = read_lines('vcf_uri.txt')[0]
         File hail_log = "hail_log.txt"
     }
 }

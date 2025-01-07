@@ -5,27 +5,11 @@ import pandas as pd
 import sys
 import os
 import datetime
-import argparse
 
-# mt_uri = sys.argv[1]
-# bucket_id = sys.argv[2]
-# cores = sys.argv[3]  # string
-# mem = int(np.floor(float(sys.argv[4])))
-
-parser = argparse.ArgumentParser(description='Parse arguments')
-parser.add_argument('-i', dest='mt_uri', help='Input MT file')
-# parser.add_argument('-o', dest='vep_annotated_vcf_name', help='Output filename')
-parser.add_argument('--bucket-id', dest='bucket_id', help='Google Project ID')
-parser.add_argument('--cores', dest='cores', help='CPU cores')
-parser.add_argument('--mem', dest='mem', help='Memory')
-
-args = parser.parse_args()
-
-mt_uri = args.mt_uri
-bucket_id = args.bucket_id
-# vep_annotated_vcf_name = args.vep_annotated_vcf_name
-cores = args.cores  # string
-mem = int(np.floor(float(args.mem)))
+mt_uri = sys.argv[1]
+bucket_id = sys.argv[2]
+cores = sys.argv[3]  # string
+mem = int(np.floor(float(sys.argv[4])))
 
 prefix = os.path.basename(mt_uri).split('.mt')[0]
 
@@ -77,10 +61,11 @@ if 'vep' in list(mt.row):
 mt = hl.vep(mt, config='vep_config.json', csq=True, tolerate_parse_error=True)
 mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
-# filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
-filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
-# pd.Series([filename]).to_csv('mt_uri.txt',index=False, header=None)
-pd.Series([filename]).to_csv('vcf_uri.txt',index=False, header=None)
+# mt_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
+# pd.Series([mt_filename]).to_csv('mt_uri.txt',index=False, header=None)
+# mt.write(mt_filename, overwrite=True)
 
-# mt.write(filename, overwrite=True)
-hl.export_vcf(mt, filename, parallel='header_per_shard')
+# export MT as VCF
+vcf_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
+hl.export_vcf(mt, vcf_filename)
+pd.Series([vcf_filename]).to_csv('vcf_uri.txt',index=False, header=None)
