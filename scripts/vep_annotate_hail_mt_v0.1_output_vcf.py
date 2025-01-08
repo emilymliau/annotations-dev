@@ -61,6 +61,18 @@ if 'vep' in list(mt.row):
 mt = hl.vep(mt, config='vep_config.json', csq=True, tolerate_parse_error=True)
 mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
+# add global annotation for CSQ header
+mt = mt.annotate_globals(vep_csq_header=mt.vep_csq_header)
+
+# annotate INFO field with additional information
+mt = mt.annotate_rows(info=mt.info.annotate(
+    num_alleles=mt.num_alleles,
+    a_index=mt.a_index,
+    was_split=mt.was_split,
+    original_vep=mt.original_vep,
+    vep_proc_id=mt.vep_proc_id
+))
+
 # mt_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
 # pd.Series([mt_filename]).to_csv('mt_uri.txt',index=False, header=None)
 # mt.write(mt_filename, overwrite=True)
