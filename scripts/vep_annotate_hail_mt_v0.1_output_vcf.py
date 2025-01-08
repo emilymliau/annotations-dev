@@ -72,11 +72,11 @@ mt = mt.annotate_rows(
 
 # annotate INFO field with additional information
 mt = mt.annotate_rows(info=mt.info.annotate(
-    num_alleles=mt.num_alleles,
-    a_index=mt.a_index,
-    was_split=mt.was_split,
-    original_vep=mt.original_vep_json,
-    vep_proc_id=mt.vep_proc_id_json
+    num_alleles=mt.info.num_alleles,
+    a_index=mt.info.a_index,
+    was_split=mt.info.was_split,
+    original_vep=mt.info.original_vep_json,
+    vep_proc_id=mt.info.vep_proc_id_json
 ))
 
 # mt_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.mt"
