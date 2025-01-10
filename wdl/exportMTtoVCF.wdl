@@ -1,5 +1,7 @@
 version 1.0
 
+import "wes-denovo-helpers.wdl" as helpers
+
 struct RuntimeAttr {
     Float? mem_gb
     Int? cpu_cores
@@ -9,38 +11,44 @@ struct RuntimeAttr {
     Int? max_retries
 }
 
-workflow MTtoVCF {
-
+workflow exportMTtoVCF {
     input {
         String mt_uri
-        String bucket_id
         String hail_docker
     }
 
-    call convertMTtoVCF {
+    call helpers.getHailMTSize as getHailMTSize {
         input:
-            mt_uri = mt_uri,
-            bucket_id = bucket_id,
-            hail_docker = hail_docker
+            mt_uri=mt_uri,
+            hail_docker=hail_docker
+    }
+
+    call exportMT {
+        input:
+            input_size=getHailMTSize.mt_size,
+            mt_uri=mt_uri,
+            hail_docker=hail_docker
     }
 
     output {
-        String vcf_uri = convertMTtoVCF.vcf_uri
+        File vcf_file = exportMT.vcf_file
     }
 }
 
-task convertMTtoVCF {
+task exportMT {
     input {
+        Float input_size
         String mt_uri
-        String bucket_id
         String hail_docker
         RuntimeAttr? runtime_attr_override
     }
 
     Float base_disk_gb = 10.0
+    Float input_disk_scale = 5.0
+
     RuntimeAttr runtime_default = object {
-        mem_gb: 8,
-        disk_gb: ceil(base_disk_gb),
+        mem_gb: 4,
+        disk_gb: ceil(base_disk_gb + input_size * input_disk_scale),
         cpu_cores: 1,
         preemptible_tries: 3,
         max_retries: 1,
@@ -48,9 +56,10 @@ task convertMTtoVCF {
     }
 
     RuntimeAttr runtime_override = select_first([runtime_attr_override, runtime_default])
+
     Float memory = select_first([runtime_override.mem_gb, runtime_default.mem_gb])
     Int cpu_cores = select_first([runtime_override.cpu_cores, runtime_default.cpu_cores])
-
+    
     runtime {
         memory: "~{memory} GB"
         disks: "local-disk ~{select_first([runtime_override.disk_gb, runtime_default.disk_gb])} HDD"
@@ -62,12 +71,36 @@ task convertMTtoVCF {
     }
 
     command <<<
-        set -euo pipefail
+    cat <<EOF > export_mt.py
+import sys
+import hail as hl
+import numpy as np
+import os
 
-        python3.9 mt_to_vcf.py ~{mt_uri} ~{bucket_id} ~{cpu_cores} ~{memory}
+mt_uri = sys.argv[1]
+cores = sys.argv[2]
+mem = int(np.floor(float(sys.argv[3])))
+
+hl.init(
+    min_block_size=128,
+    spark_conf={
+        "spark.executor.cores": cores, 
+        "spark.executor.memory": f"{int(np.floor(mem * 0.4))}g",
+        "spark.driver.cores": cores,
+        "spark.driver.memory": f"{int(np.floor(mem * 0.4))}g"
+    },
+    tmp_dir="tmp",
+    local_tmpdir="tmp"
+)
+
+mt = hl.read_matrix_table(mt_uri)
+hl.export_vcf(mt, os.path.basename(mt_uri).split('.mt')[0] + '.vcf.gz')
+EOF
+
+    python3 export_mt.py ~{mt_uri} ~{cpu_cores} ~{memory}
     >>>
 
     output {
-        String vcf_uri = read_lines('vcf_uri.txt')[0]
+        File vcf_file = basename(mt_uri, '.mt') + '.vcf.gz'
     }
 }
