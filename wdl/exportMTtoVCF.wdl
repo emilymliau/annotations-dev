@@ -31,7 +31,7 @@ workflow exportMTtoVCF {
     }
 
     output {
-        File vcf_file = exportMT.vcf_file
+        File file = exportMT.file
     }
 }
 
@@ -101,6 +101,6 @@ EOF
     >>>
 
     output {
-        File vcf_file = basename(mt_uri, '.mt') + '.vcf.gz'
+        File file = basename(mt_uri, '.mt') + '.vcf.gz'
     }
 }
