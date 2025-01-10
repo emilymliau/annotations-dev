@@ -94,13 +94,13 @@ hl.init(
 )
 
 mt = hl.read_matrix_table(mt_uri)
-hl.export_vcf(mt, os.path.basename(mt_uri).split('.mt')[0] + '.vcf.gz')
+hl.export_vcf(mt, os.path.basename(mt_uri).split('.mt')[0] + '.vcf.bgz')
 EOF
 
     python3 export_mt.py ~{mt_uri} ~{cpu_cores} ~{memory}
     >>>
 
     output {
-        File file = basename(mt_uri, '.mt') + '.vcf.gz'
+        File file = basename(mt_uri, '.mt') + '.vcf.bgz'
     }
 }

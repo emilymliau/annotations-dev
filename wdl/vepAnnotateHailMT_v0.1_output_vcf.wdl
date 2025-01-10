@@ -151,11 +151,13 @@ task vepAnnotateMT {
         curl ~{vep_annotate_hail_mt_script} > vep_annotate.py
         python3.9 vep_annotate.py ~{mt_uri} ~{bucket_id} ~{cpu_cores} ~{memory}
         cp $(ls . | grep hail*.log) hail_log.txt
+        # bcftools index -t $(read_lines('vcf_uri.txt')[0])
     >>>
 
     output {
         # String vep_mt_uri = read_lines('mt_uri.txt')[0]
         String vep_vcf_uri = read_lines('vcf_uri.txt')[0]
+        # File vep_vcf_index = vep_vcf_uri + ".tbi"
         File hail_log = "hail_log.txt"
     }
 }
