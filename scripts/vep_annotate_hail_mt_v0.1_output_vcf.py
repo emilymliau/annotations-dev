@@ -46,6 +46,12 @@ def split_multi_ssc(mt):
 mt = hl.read_matrix_table(mt_uri)
 # mt = mt.distinct_by_row()
 
+# store initial MT file as VCF
+initial_vcf_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}.vcf.bgz"
+hl.export_vcf(mt, initial_vcf_filename)
+
+mt = hl.import_vcf(initial_vcf_filename, drop_samples=True, force_bgz=True, array_elements_required=False, call_fields=[])
+
 if 'num_alleles' not in list(mt.row_value.keys()):
     mt = split_multi_ssc(mt)
     # mt = mt.distinct_by_row()
@@ -65,7 +71,7 @@ mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 # pd.Series([mt_filename]).to_csv('mt_uri.txt',index=False, header=None)
 # mt.write(mt_filename, overwrite=True)
 
-# export MT as VCF
+# export annotated MT as VCF
 vcf_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
 hl.export_vcf(mt, vcf_filename)
 pd.Series([vcf_filename]).to_csv('vcf_uri.txt',index=False, header=None)

@@ -1,5 +1,5 @@
 version 1.0
-    
+
 import "mergeSplitVCF.wdl" as mergeSplitVCF
 import "mergeVCFs.wdl" as mergeVCFs
 import "helpers.wdl" as helpers
@@ -38,6 +38,7 @@ workflow vepAnnotateHailMT {
         Array[String]? row_fields_to_keep=[false]
         RuntimeAttr? runtime_attr_merge_vcfs
         RuntimeAttr? runtime_attr_vep_annotate
+        # RuntimeAttr? runtime_attr_annotate_add_genotypes
     }
 
     # if (!defined(mt_shards)) {
@@ -52,10 +53,10 @@ workflow vepAnnotateHailMT {
     # Array[String] mt_shards_ = select_first([scatterMT.mt_shards, mt_shards])
     Array[String] mt_shards_ = select_first([mt_shards])
 
-    scatter (shard in mt_shards_) {
+    scatter (mt_shard in mt_shards_) {
         call vepAnnotateMT {
             input:
-                mt_uri=shard,
+                mt_uri=mt_shard,
                 vep_annotate_hail_mt_script=vep_annotate_hail_mt_script,
                 top_level_fa=top_level_fa,
                 human_ancestor_fa=human_ancestor_fa,
