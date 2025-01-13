@@ -96,7 +96,7 @@ workflow vepAnnotateHailExtra {
     }
 
     output {
-        Array[File] annot_mt_files = scatter.annot_mt_file
+        Array[File] annot_mt_files = addGenotypes.combined_mt_file
     }
 }   
 
