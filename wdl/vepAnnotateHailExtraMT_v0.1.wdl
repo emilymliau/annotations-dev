@@ -102,7 +102,7 @@ workflow vepAnnotateHailExtra {
 
 task annotateFromBed {
     input {
-        File mt_file
+        String mt_file
         String noncoding_bed 
         String hail_docker
         String genome_build
@@ -185,7 +185,7 @@ task annotateFromBed {
 
 task annotateExtra {
     input {
-        File mt_file
+        String mt_file
         String loeuf_v2_uri
         String loeuf_v4_uri
         File revel_file
@@ -248,7 +248,7 @@ task annotateExtra {
 
 task annotateSpliceAI {
     input {
-        File mt_file
+        String mt_file
         String spliceAI_uri
 
         String hail_docker
