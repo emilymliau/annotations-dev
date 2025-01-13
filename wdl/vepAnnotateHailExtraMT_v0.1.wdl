@@ -17,7 +17,7 @@ struct RuntimeAttr {
 workflow vepAnnotateHailExtra {
 
     input {
-        Array[File] mt_files
+        Array[String] mt_files
 
         File revel_file
         File clinvar_vcf_uri
@@ -96,7 +96,7 @@ workflow vepAnnotateHailExtra {
     }
 
     output {
-        Array[File] annot_mt_files = addGenotypesMT.combined_mt_file
+        Array[String] annot_mt_files = addGenotypesMT.combined_mt_file
     }
 }   
 
