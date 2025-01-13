@@ -85,7 +85,7 @@ workflow vepAnnotateHailExtra {
         }
         File annot_mt_file = select_first([annotateSpliceAI.annot_mt_file, annotateExtra.annot_mt_file])
 
-        call helpers.addGenotypes as addGenotypes {
+        call helpers.addGenotypesMT as addGenotypesMT {
             input:
             annot_mt_file=annot_mt_file,
             mt_file=mt_shard,
@@ -96,7 +96,7 @@ workflow vepAnnotateHailExtra {
     }
 
     output {
-        Array[File] annot_mt_files = addGenotypes.combined_mt_file
+        Array[File] annot_mt_files = addGenotypesMT.combined_mt_file
     }
 }   
 
