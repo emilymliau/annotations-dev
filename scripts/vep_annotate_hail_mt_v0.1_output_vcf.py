@@ -67,5 +67,5 @@ mt = mt.annotate_rows(info = mt.info.annotate(CSQ=mt.vep))
 
 # export MT as VCF
 vcf_filename = f"{bucket_id}/vep-annotate-hail-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep.vcf.bgz"
-hl.export_vcf(mt, vcf_filename, tabix=True)
+hl.export_vcf(mt, vcf_filename)
 pd.Series([vcf_filename]).to_csv('vcf_uri.txt',index=False, header=None)
