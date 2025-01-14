@@ -13,12 +13,13 @@ task addGenotypesMT {
     input {
         String annot_mt_file
         String mt_file
+        Float input_size # added
         String hail_docker
         String genome_build
         RuntimeAttr? runtime_attr_override
     }
 
-    Float input_size = 10.0
+    # Float input_size = 10.0
     Float base_disk_gb = 10.0
 
     RuntimeAttr runtime_default = object {

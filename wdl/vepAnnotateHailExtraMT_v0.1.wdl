@@ -45,10 +45,17 @@ workflow vepAnnotateHailExtra {
     }
 
     scatter (mt_shard in vep_mt_uris) {
+        call helpers.getHailMTSize as getInputMTSize {
+            input:
+                mt_uri=mt_uri,
+                hail_docker=hail_docker
+        }
+
         if (noncoding_bed!='NA') {
             call annotateFromBed as annotateNonCoding {
                 input:
                 mt_uri=mt_shard,
+                input_size=getInputMTSize.mt_size, # added
                 noncoding_bed=select_first([noncoding_bed]),
                 hail_docker=hail_docker,
                 genome_build=genome_build,
@@ -60,6 +67,7 @@ workflow vepAnnotateHailExtra {
         call annotateExtra {
             input:
                 mt_uri=select_first([annotateNonCoding.noncoding_mt, mt_shard]),
+                input_size=getInputMTSize.mt_size, # added
                 vep_annotate_hail_extra_python_script=vep_annotate_hail_extra_python_script,
                 loeuf_v2_uri=loeuf_v2_uri,
                 loeuf_v4_uri=loeuf_v4_uri,
@@ -78,6 +86,7 @@ workflow vepAnnotateHailExtra {
             call annotateSpliceAI {
                 input:
                 mt_uri=annotateExtra.annot_mt_uri,
+                input_size=getInputMTSize.mt_size, # added
                 spliceAI_uri=spliceAI_uri,
                 genome_build=genome_build,
                 hail_docker=hail_docker,
@@ -90,6 +99,7 @@ workflow vepAnnotateHailExtra {
             input:
             annot_mt_uri=annot_mt_uri,
             mt_uri=mt_shard,
+            input_size=getInputMTSize.mt_size, # added
             genome_build=genome_build,
             hail_docker=hail_docker,
             runtime_attr_override=runtime_attr_annotate_add_genotypes
@@ -104,13 +114,14 @@ workflow vepAnnotateHailExtra {
 task annotateFromBed {
     input {
         String mt_uri
+        Float input_size # added
         String noncoding_bed 
         String hail_docker
         String genome_build
         Boolean filter
         RuntimeAttr? runtime_attr_override
     }
-    Float input_size = size(mt_uri, 'GB')
+    # Float input_size = size(mt_uri, 'GB')
     Float base_disk_gb = 10.0
     Float input_disk_scale = 5.0
 
@@ -187,6 +198,7 @@ task annotateFromBed {
 task annotateExtra {
     input {
         String mt_uri
+        Float input_size # added
         String loeuf_v2_uri
         String loeuf_v4_uri
         File revel_file
@@ -202,7 +214,7 @@ task annotateExtra {
         RuntimeAttr? runtime_attr_override
     }
 
-    Float input_size = size(mt_uri, "GB")
+    # Float input_size = size(mt_uri, "GB")
     Float base_disk_gb = 10.0
     Float input_disk_scale = 10.0
     RuntimeAttr runtime_default = object {
@@ -250,6 +262,7 @@ task annotateExtra {
 task annotateSpliceAI {
     input {
         String mt_uri
+        Float input_size # added
         String spliceAI_uri
 
         String hail_docker
@@ -257,7 +270,7 @@ task annotateSpliceAI {
         RuntimeAttr? runtime_attr_override
     }
 
-    Float input_size = size(mt_uri, "GB")
+    # Float input_size = size(mt_uri, "GB")
     Float base_disk_gb = 10.0
     Float input_disk_scale = 10.0
     RuntimeAttr runtime_default = object {
