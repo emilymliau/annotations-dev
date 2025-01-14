@@ -44,7 +44,7 @@ workflow vepAnnotateHailExtra {
         RuntimeAttr? runtime_attr_annotate_add_genotypes
     }
 
-    scatter (mt_shard in vep_mt_uris) {
+    scatter (mt_uri in vep_mt_uris) {
         call helpers.getHailMTSize as getInputMTSize {
             input:
                 mt_uri=mt_uri,
@@ -54,7 +54,7 @@ workflow vepAnnotateHailExtra {
         if (noncoding_bed!='NA') {
             call annotateFromBed as annotateNonCoding {
                 input:
-                mt_uri=mt_shard,
+                mt_uri=mt_uri,
                 input_size=getInputMTSize.mt_size, # added
                 noncoding_bed=select_first([noncoding_bed]),
                 hail_docker=hail_docker,
@@ -66,7 +66,7 @@ workflow vepAnnotateHailExtra {
 
         call annotateExtra {
             input:
-                mt_uri=select_first([annotateNonCoding.noncoding_mt, mt_shard]),
+                mt_uri=select_first([annotateNonCoding.noncoding_mt, mt_uri]),
                 input_size=getInputMTSize.mt_size, # added
                 vep_annotate_hail_extra_python_script=vep_annotate_hail_extra_python_script,
                 loeuf_v2_uri=loeuf_v2_uri,
@@ -98,7 +98,7 @@ workflow vepAnnotateHailExtra {
         call helpers.addGenotypesMT as addGenotypesMT {
             input:
             annot_mt_uri=annot_mt_uri,
-            mt_uri=mt_shard,
+            mt_uri=mt_uri,
             input_size=getInputMTSize.mt_size, # added
             genome_build=genome_build,
             hail_docker=hail_docker,
