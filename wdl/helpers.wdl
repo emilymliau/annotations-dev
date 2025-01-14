@@ -11,8 +11,8 @@ struct RuntimeAttr {
 
 task addGenotypesMT {
     input {
-        String annot_mt_file
-        String mt_file
+        String annot_mt_uri
+        String mt_uri
         Float input_size # added
         String hail_docker
         String genome_build
@@ -44,8 +44,8 @@ task addGenotypesMT {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    # String filename = basename(annot_mt_file)
-    String prefix = basename(annot_mt_file, ".mt")
+    # String filename = basename(annot_mt_uri)
+    String prefix = basename(annot_mt_uri, ".mt")
     String combined_mt_name = "~{prefix}.GT.mt"
 
     command <<<
@@ -58,8 +58,8 @@ task addGenotypesMT {
     import argparse
 
     parser = argparse.ArgumentParser(description='Parse arguments')
-    parser.add_argument('-i', dest='mt_file', help='Input MT file before annotation', required=True)
-    parser.add_argument('-a', dest='annot_mt_file', help='Input MT file after annotation', required=True)
+    parser.add_argument('-i', dest='mt_uri', help='Input MT file before annotation', required=True)
+    parser.add_argument('-a', dest='annot_mt_uri', help='Input MT file after annotation', required=True)
     parser.add_argument('-o', dest='combined_mt_name', help='Output filename', required=True)
     parser.add_argument('--cores', dest='cores', help='CPU cores', required=True)
     parser.add_argument('--mem', dest='mem', help='Memory in GB', required=True)
@@ -67,8 +67,8 @@ task addGenotypesMT {
 
     args = parser.parse_args()
 
-    mt_file = args.mt_file
-    annot_mt_file = args.annot_mt_file
+    mt_uri = args.mt_uri
+    annot_mt_uri = args.annot_mt_uri
     combined_mt_name = args.combined_mt_name
     cores = args.cores  # string
     mem = int(np.floor(float(args.mem)))
@@ -83,15 +83,15 @@ task addGenotypesMT {
             tmp_dir="tmp", local_tmpdir="tmp",
                         )
 
-    mt = hl.read_matrix_table(mt_file)
-    annot_mt = hl.read_matrix_table(annot_mt_file)
+    mt = hl.read_matrix_table(mt_uri)
+    annot_mt = hl.read_matrix_table(annot_mt_uri)
 
     combined_mt = annot_mt.union_cols(mt)
 
     combined_mt.write(combined_mt_name, overwrite=True)
     EOF
 
-    python3 merge_mts.py -i ~{mt_file} -a ~{annot_mt_file} -o ~{combined_mt_name} --cores ~{cpu_cores} --mem ~{memory} \
+    python3 merge_mts.py -i ~{mt_uri} -a ~{annot_mt_uri} -o ~{combined_mt_name} --cores ~{cpu_cores} --mem ~{memory} \
         --build ~{genome_build}
     >>>
 
