@@ -17,7 +17,7 @@ struct RuntimeAttr {
 workflow vepAnnotateHailExtra {
 
     input {
-        Array[String] mt_files
+        Array[String] vep_mt_files
 
         File revel_file
         File clinvar_vcf_uri
@@ -44,7 +44,7 @@ workflow vepAnnotateHailExtra {
         RuntimeAttr? runtime_attr_annotate_add_genotypes
     }
 
-    scatter (mt_shard in mt_files) {
+    scatter (mt_shard in vep_mt_files) {
         if (noncoding_bed!='NA') {
             call annotateFromBed as annotateNonCoding {
                 input:
@@ -64,6 +64,7 @@ workflow vepAnnotateHailExtra {
                 loeuf_v2_uri=loeuf_v2_uri,
                 loeuf_v4_uri=loeuf_v4_uri,
                 revel_file=revel_file,
+                revel_file_idx=revel_file+'.tbi',
                 clinvar_vcf_uri=clinvar_vcf_uri,
                 omim_uri=omim_uri,
                 gene_list=select_first([gene_list, 'NA']),
@@ -96,7 +97,7 @@ workflow vepAnnotateHailExtra {
     }
 
     output {
-        Array[String] annot_mt_files = addGenotypesMT.combined_mt_file
+        Array[String] annot_vep_mt_files = addGenotypesMT.combined_mt_file
     }
 }   
 
@@ -377,7 +378,7 @@ task annotateSpliceAI {
     >>>
 
     output {
-        File annot_mt_file = vep_annotated_mt_name
+        String annot_mt_file = vep_annotated_mt_name
         File hail_log = "hail_log.txt"
     }
 }

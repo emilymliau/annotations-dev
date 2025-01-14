@@ -11,14 +11,14 @@ struct RuntimeAttr {
 
 task addGenotypesMT {
     input {
-        File annot_mt_file
-        File mt_file
+        String annot_mt_file
+        String mt_file
         String hail_docker
         String genome_build
         RuntimeAttr? runtime_attr_override
     }
 
-    Float input_size = size([annot_mt_file, mt_file], "GB") 
+    Float input_size = 10.0
     Float base_disk_gb = 10.0
 
     RuntimeAttr runtime_default = object {
@@ -43,7 +43,7 @@ task addGenotypesMT {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String filename = basename(annot_mt_file)
+    # String filename = basename(annot_mt_file)
     String prefix = basename(annot_mt_file, ".mt")
     String combined_mt_name = "~{prefix}.GT.mt"
 
