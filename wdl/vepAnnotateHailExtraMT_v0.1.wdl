@@ -202,6 +202,7 @@ task annotateExtra {
         String loeuf_v2_uri
         String loeuf_v4_uri
         File revel_file
+        File revel_file_idx
         File clinvar_vcf_uri
         File omim_uri
         
