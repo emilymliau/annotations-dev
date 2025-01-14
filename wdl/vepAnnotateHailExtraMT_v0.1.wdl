@@ -149,7 +149,7 @@ task annotateFromBed {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String output_filename = basename(mt_uri, ".mt") + '_noncoding_annot.mt' 
+    String noncoding_uri = basename(mt_uri, ".mt") + '_noncoding_annot.mt' 
    
     command <<<
     cat <<EOF > annotate_noncoding.py
@@ -165,7 +165,7 @@ task annotateFromBed {
     cores = sys.argv[3]  # string
     mem = int(np.floor(float(sys.argv[4])))
     build = sys.argv[5]
-    output_filename = sys.argv[6]
+    noncoding_uri = sys.argv[6]
     filter = ast.literal_eval(sys.argv[7].capitalize())
 
     hl.init(min_block_size=128, 
@@ -185,13 +185,13 @@ task annotateFromBed {
     if filter:
         mt = mt.filter_rows(hl.is_defined(mt.info.PREDICTED_NONCODING))
 
-    mt.write(output_filename, overwrite=True)
+    mt.write(noncoding_uri, overwrite=True)
     EOF
-    python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{output_filename} ~{filter}
+    python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{noncoding_uri} ~{filter}
     >>>
 
     output {
-        File noncoding_mt = output_filename
+        String noncoding_mt = noncoding_uri
     }
 }
 
@@ -255,7 +255,7 @@ task annotateExtra {
     >>>
 
     output {
-        File annot_mt_uri = vep_annotated_mt_name
+        String annot_mt_uri = vep_annotated_mt_name
         File hail_log = "hail_log.txt"
     }
 }
