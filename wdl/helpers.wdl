@@ -96,7 +96,7 @@ task addGenotypesMT {
     >>>
 
     output {
-        File combined_mt_file = combined_mt_name
+        File combined_mt_uri = combined_mt_name
     }
 }
 
