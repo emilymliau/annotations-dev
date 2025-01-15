@@ -28,6 +28,7 @@ workflow vepAnnotateHailExtra {
 
         String cohort_prefix
         String hail_docker
+        String bucket_id # added
         
         String vep_annotate_hail_extra_python_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/vep_annotate_hail_extra_v0.1_dev.py"
         String split_vcf_hail_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/split_vcf_hail.py"
@@ -38,7 +39,7 @@ workflow vepAnnotateHailExtra {
         String noncoding_bed='NA'
         String gene_list='NA'
 
-        RuntimeAttr? runtime_attr_annotate_noncoding      
+        RuntimeAttr? runtime_attr_annotate_noncoding
         RuntimeAttr? runtime_attr_annotate_extra
         RuntimeAttr? runtime_attr_annotate_spliceAI
         RuntimeAttr? runtime_attr_annotate_add_genotypes
@@ -55,7 +56,7 @@ workflow vepAnnotateHailExtra {
             call annotateFromBed as annotateNonCoding {
                 input:
                 mt_uri=mt_uri,
-                input_size=getInputMTSize.mt_size, # added
+                input_size=getInputMTSize.mt_size,
                 noncoding_bed=select_first([noncoding_bed]),
                 hail_docker=hail_docker,
                 genome_build=genome_build,
@@ -67,7 +68,7 @@ workflow vepAnnotateHailExtra {
         call annotateExtra {
             input:
                 mt_uri=select_first([annotateNonCoding.noncoding_mt, mt_uri]),
-                input_size=getInputMTSize.mt_size, # added
+                input_size=getInputMTSize.mt_size,
                 vep_annotate_hail_extra_python_script=vep_annotate_hail_extra_python_script,
                 loeuf_v2_uri=loeuf_v2_uri,
                 loeuf_v4_uri=loeuf_v4_uri,
@@ -78,6 +79,7 @@ workflow vepAnnotateHailExtra {
                 gene_list=select_first([gene_list, 'NA']),
                 mpc_ht_uri=mpc_ht_uri,
                 hail_docker=hail_docker,
+                bucket_id=bucket_id, # added
                 genome_build=genome_build,
                 runtime_attr_override=runtime_attr_annotate_extra
         }
@@ -86,7 +88,7 @@ workflow vepAnnotateHailExtra {
             call annotateSpliceAI {
                 input:
                 mt_uri=annotateExtra.annot_mt_uri,
-                input_size=getInputMTSize.mt_size, # added
+                input_size=getInputMTSize.mt_size,
                 spliceAI_uri=spliceAI_uri,
                 genome_build=genome_build,
                 hail_docker=hail_docker,
@@ -99,7 +101,7 @@ workflow vepAnnotateHailExtra {
             input:
             annot_mt_uri=annot_mt_uri,
             mt_uri=mt_uri,
-            input_size=getInputMTSize.mt_size, # added
+            input_size=getInputMTSize.mt_size,
             genome_build=genome_build,
             hail_docker=hail_docker,
             runtime_attr_override=runtime_attr_annotate_add_genotypes
@@ -114,7 +116,7 @@ workflow vepAnnotateHailExtra {
 task annotateFromBed {
     input {
         String mt_uri
-        Float input_size # added
+        Float input_size
         String noncoding_bed 
         String hail_docker
         String genome_build
@@ -149,7 +151,7 @@ task annotateFromBed {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String noncoding_uri = basename(mt_uri, ".mt") + '_noncoding_annot.mt' 
+    String noncoding_uri = sub(basename(mt_uri), "_vep.mt", "") + '_noncoding_annot.mt'
    
     command <<<
     cat <<EOF > annotate_noncoding.py
@@ -198,7 +200,7 @@ task annotateFromBed {
 task annotateExtra {
     input {
         String mt_uri
-        Float input_size # added
+        Float input_size
         String loeuf_v2_uri
         String loeuf_v4_uri
         File revel_file
@@ -210,6 +212,7 @@ task annotateExtra {
         String mpc_ht_uri
 
         String hail_docker
+        String bucket_id # added
         String genome_build
         String vep_annotate_hail_extra_python_script
         RuntimeAttr? runtime_attr_override
@@ -242,7 +245,7 @@ task annotateExtra {
     }
 
     String filename = basename(mt_uri)
-    String prefix = basename(mt_uri, ".mt")
+    String prefix = basename(mt_uri, "_vep.mt")
     String vep_annotated_mt_name = "~{prefix}.annot.mt"
 
     command <<<
@@ -250,7 +253,7 @@ task annotateExtra {
         python3 annotate.py -i ~{mt_uri} -o ~{vep_annotated_mt_name} --cores ~{cpu_cores} --mem ~{memory} \
         --build ~{genome_build} --loeuf-v2 ~{loeuf_v2_uri} --loeuf-v4 ~{loeuf_v4_uri} \
         --mpc ~{mpc_ht_uri} --clinvar ~{clinvar_vcf_uri} --omim ~{omim_uri} \
-        --revel ~{revel_file} --genes ~{gene_list} 
+        --revel ~{revel_file} --genes ~{gene_list} --bucket-id ~{bucket_id}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
@@ -263,7 +266,7 @@ task annotateExtra {
 task annotateSpliceAI {
     input {
         String mt_uri
-        Float input_size # added
+        Float input_size
         String spliceAI_uri
 
         String hail_docker
@@ -298,7 +301,7 @@ task annotateSpliceAI {
     }
 
     String filename = basename(mt_uri)
-    String prefix = basename(mt_uri, ".mt")
+    String prefix = basename(mt_uri, "_vep.mt")
     String vep_annotated_mt_name = "~{prefix}.SpliceAI.annot.mt"
 
     command <<<

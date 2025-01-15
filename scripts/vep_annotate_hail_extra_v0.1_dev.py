@@ -10,7 +10,7 @@ import argparse
 import datetime
 
 parser = argparse.ArgumentParser(description='Parse arguments')
-parser.add_argument('-i', dest='mt_file', help='Input MT file', required=True)
+parser.add_argument('-i', dest='mt_uri', help='Input MT file', required=True)
 parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
 parser.add_argument('--cores', dest='cores', help='CPU cores', required=True)
 parser.add_argument('--mem', dest='mem', help='Memory in GB', required=True)
@@ -24,11 +24,12 @@ parser.add_argument('--loeuf-v4', dest='loeuf_v4_uri', help='LOEUF scores from g
 parser.add_argument('--spliceAI-snv', dest='spliceAI_snv_uri', help='SpliceAI scores SNV HT')
 parser.add_argument('--spliceAI-indel', dest='spliceAI_indel_uri', help='SpliceAI scores Indel HT')
 parser.add_argument('--genes', dest='gene_list', help='OPTIONAL: Gene list txt file')
-parser.add_argument('--project-id', dest='project_id', help='Google Project ID')
+# parser.add_argument('--project-id', dest='project_id', help='Google Project ID')
+parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 
 args = parser.parse_args()
 
-mt_file = args.mt_file
+mt_uri = args.mt_uri
 vep_annotated_mt_name = args.vep_annotated_mt_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
@@ -42,7 +43,8 @@ loeuf_v4_uri = args.loeuf_v4_uri
 spliceAI_snv_uri = args.spliceAI_snv_uri
 spliceAI_indel_uri = args.spliceAI_indel_uri
 gene_list = args.gene_list
-gcp_project = args.project_id
+# gcp_project = args.project_id
+bucket_id = args.bucket_id
 
 hl.init(min_block_size=128, 
         local=f"local[*]", 
@@ -53,8 +55,8 @@ hl.init(min_block_size=128,
         tmp_dir="tmp", local_tmpdir="tmp",
                     )
 
-mt = hl.read_matrix_table(mt_file)
-prefix = os.path.basename(mt_file).split('.mt')[0]
+mt = hl.read_matrix_table(mt_uri)
+prefix = os.path.basename(mt_uri).split('.mt')[0]
 
 # annotate MPC
 mpc = hl.read_table(mpc_ht_uri).key_by('locus','alleles')
@@ -140,6 +142,6 @@ mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CS
 mt = mt.drop('vep')
 
 # export annotated MT
-filename = f"{gcp_project}/vep-annotate-hail-extra-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep_extra.mt"
+filename = f"{bucket_id}/vep-annotate-hail-extra-mt/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep_annot_extra.mt"
 pd.Series([filename]).to_csv('mt_uri.txt',index=False, header=None)
 mt.write(vep_annotated_mt_name, overwrite=True)
