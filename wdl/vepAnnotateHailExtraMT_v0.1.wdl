@@ -94,7 +94,7 @@ workflow vepAnnotateHailExtra {
                 runtime_attr_override=runtime_attr_annotate_spliceAI
             }
         }
-        File annot_mt_uri = select_first([annotateSpliceAI.annot_mt_uri, annotateExtra.annot_mt_uri])
+        String annot_mt_uri = select_first([annotateSpliceAI.annot_mt_uri, annotateExtra.annot_mt_uri])
     }
 
     output {
