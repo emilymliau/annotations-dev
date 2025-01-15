@@ -177,8 +177,6 @@ task annotateFromBed {
     if filter:
         mt = mt.filter_rows(hl.is_defined(mt.info.PREDICTED_NONCODING))
 
-    # chr01_split_vep_shard_28_vep.mt
-    # chr01_split_vep_shard_28_noncoding_annot.mt
     dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
     mt.write(dir_name, overwrite=True)
     pd.Series([dir_name]).to_csv('noncoding_uri.txt', index=False, header=None)
