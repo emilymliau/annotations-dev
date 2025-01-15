@@ -3,7 +3,6 @@ version 1.0
 import "scatterVCF.wdl" as scatterVCF
 import "mergeSplitVCF.wdl" as mergeSplitVCF
 import "mergeVCFs.wdl" as mergeVCFs
-import "helpers.wdl" as helpers
 
 struct RuntimeAttr {
     Float? mem_gb
@@ -96,22 +95,12 @@ workflow vepAnnotateHailExtra {
             }
         }
         File annot_mt_uri = select_first([annotateSpliceAI.annot_mt_uri, annotateExtra.annot_mt_uri])
-
-        call helpers.addGenotypesMT as addGenotypesMT {
-            input:
-            annot_mt_uri=annot_mt_uri,
-            mt_uri=mt_uri,
-            input_size=getInputMTSize.mt_size,
-            genome_build=genome_build,
-            hail_docker=hail_docker,
-            runtime_attr_override=runtime_attr_annotate_add_genotypes
-        }
     }
 
     output {
-        Array[String] annot_vep_mt_uris = addGenotypesMT.combined_mt_uri
+        Array[String] annot_vep_mt_uris = annot_mt_uri # modify/verify accuracy
     }
-}   
+}
 
 task annotateFromBed {
     input {
@@ -151,7 +140,7 @@ task annotateFromBed {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String noncoding_uri = sub(basename(mt_uri), "_vep.mt", "") + '_noncoding_annot.mt'
+    # String noncoding_uri = sub(basename(mt_uri), "_vep.mt", "") + '_noncoding_annot.mt'
    
     command <<<
     cat <<EOF > annotate_noncoding.py
@@ -167,8 +156,9 @@ task annotateFromBed {
     cores = sys.argv[3]  # string
     mem = int(np.floor(float(sys.argv[4])))
     build = sys.argv[5]
-    noncoding_uri = sys.argv[6]
-    filter = ast.literal_eval(sys.argv[7].capitalize())
+    # noncoding_uri = sys.argv[6]
+    # filter = ast.literal_eval(sys.argv[7].capitalize())
+    filter = ast.literal_eval(sys.argv[6].capitalize())
 
     hl.init(min_block_size=128, 
             local=f"local[*]", 
@@ -187,13 +177,19 @@ task annotateFromBed {
     if filter:
         mt = mt.filter_rows(hl.is_defined(mt.info.PREDICTED_NONCODING))
 
-    mt.write(noncoding_uri, overwrite=True)
+    # chr01_split_vep_shard_28_vep.mt
+    # chr01_split_vep_shard_28_noncoding_annot.mt
+    dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
+    mt.write(dir_name, overwrite=True)
+    pd.Series([dir_name]).to_csv('noncoding_uri.txt', index=False, header=None)
+    # mt.write(noncoding_uri, overwrite=True)
     EOF
-    python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{noncoding_uri} ~{filter}
+    # python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{noncoding_uri} ~{filter}
+    python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{filter}
     >>>
 
     output {
-        String noncoding_mt = noncoding_uri
+        String noncoding_mt = read_lines('noncoding_uri.txt')[0]
     }
 }
 
