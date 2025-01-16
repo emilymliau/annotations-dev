@@ -30,7 +30,7 @@ mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 
 # calculate INFO-level DP (sum AD fields across samples)
 print(f"Calculating INFO-level DP...")
-mt = mt.annotate_rows(INFO_DP=hl.agg.sum(mt.AD))
+mt = mt.annotate_rows(INFO_DP=hl.agg.sum(hl.sum(mt.AD)))
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"Processing finished at: {datetime.datetime.now()}")
