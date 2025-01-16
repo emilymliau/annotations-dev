@@ -23,7 +23,6 @@ workflow addDPtoVCF {
             add_dp_python_script=add_dp_python_script,
             hail_docker=hail_docker,
             runtime_attr_override=runtime_attr_override
-        }
     }
 
     output {
