@@ -28,9 +28,9 @@ header['format']['DP'] = {'Description': 'Approximate read depth (estimated as s
 print(f"Calculating FORMAT-level DP...")
 mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 
-# calculate INFO-level DP (sum AD fields across samples)
+# calculate INFO-level DP (sum of FORMAT-level DP)
 print(f"Calculating INFO-level DP...")
-mt = mt.annotate_rows(INFO_DP=hl.agg.sum(hl.sum(mt.AD)))
+mt = mt.annotate_rows(INFO_DP=hl.agg.sum(mt.DP))
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"Processing finished at: {datetime.datetime.now()}")
