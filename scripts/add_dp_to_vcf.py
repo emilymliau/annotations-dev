@@ -17,12 +17,17 @@ hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores,
                     "spark.driver.memory": f"{int(np.floor(mem*0.4))}g"
                     }, tmp_dir="tmp", local_tmpdir="tmp")
 
+print(f"Processing started at: {datetime.datetime.now()}")
 mt = hl.import_vcf(input_vcf)
 
-    # calculate FORMAT-level DP by summing the AD fields per sample
-    mt = mt.annotate_entries(DP=hl.sum(mt.AD))
+# calculate FORMAT-level DP (sum AD fields per sample)
+print(f"Calculating FORMAT-level DP...")
+mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 
-    # calculate INFO-level DP by summing across samples
-    mt = mt.annotate_rows(INFO_DP=hl.agg.sum(mt.DP))
+# calculate INFO-level DP (sum AD fields across samples)
+print(f"Calculating INFO-level DP...")
+mt = mt.annotate_rows(INFO_DP=hl.agg.sum(mt.AD))
 
-    hl.export_vcf(mt, output_vcf)
+hl.export_vcf(mt, output_vcf)
+print(f"Processing finished at: {datetime.datetime.now()}")
+print("Output VCF: ", output_vcf)
