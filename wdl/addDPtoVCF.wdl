@@ -13,6 +13,7 @@ workflow addDPtoVCF {
     input {
         File input_vcf
         String add_dp_python_script
+        String hail_docker
         RuntimeAttr? runtime_attr_override
     }
 
@@ -20,6 +21,7 @@ workflow addDPtoVCF {
         input:
             input_vcf=input_vcf,
             add_dp_python_script=add_dp_python_script,
+            hail_docker=hail_docker,
             runtime_attr_override=runtime_attr_override
         }
     }
@@ -34,6 +36,7 @@ task addDP {
     input {
         File input_vcf
         String add_dp_python_script
+        String hail_docker
         RuntimeAttr? runtime_attr_override
     }
     Float input_size = size(input_vcf, 'GB')
