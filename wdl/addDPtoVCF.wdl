@@ -18,9 +18,9 @@ workflow addDPtoVCF {
 
     call addDP {
         input:
-        input_vcf=input_vcf,
-        add_dp_python_script=add_dp_python_script,
-        runtime_attr_override=runtime_attr_override
+            input_vcf=input_vcf,
+            add_dp_python_script=add_dp_python_script,
+            runtime_attr_override=runtime_attr_override
         }
     }
 
