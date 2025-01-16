@@ -71,7 +71,7 @@ task addDP {
     command <<<
         set -eou pipefail
         curl ~{add_dp_python_script} > add_dp.py
-        python3.9 add_dp.py ~{input_vcf} ~{output_filename} ~{cpu_cores} ~{memory}
+        python3 add_dp.py ~{input_vcf} ~{output_filename} ~{cpu_cores} ~{memory}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
