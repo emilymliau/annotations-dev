@@ -17,10 +17,10 @@ workflow addDPtoVCF {
     }
 
     call addDP {
-        input {
-            input_vcf=input_vcf
-            add_dp_python_script=add_dp_python_script
-            runtime_attr_override=runtime_attr_override
+        input:
+        input_vcf=input_vcf,
+        add_dp_python_script=add_dp_python_script,
+        runtime_attr_override=runtime_attr_override
         }
     }
 
@@ -36,7 +36,6 @@ task addDP {
         String add_dp_python_script
         RuntimeAttr? runtime_attr_override
     }
-
     Float input_size = size(input_vcf, 'GB')
     Float base_disk_gb = 10.0
     Float input_disk_scale = 5.0
@@ -67,11 +66,12 @@ task addDP {
 
     String output_filename = sub(basename(input_vcf), ".vcf", "") + ".DP.vcf"
 
-    command {
+    command <<<
+        set -eou pipefail
         curl ~{add_dp_python_script} > add_dp.py
         python3.9 add_dp.py ~{input_vcf} ~{output_filename} ~{cpu_cores} ~{memory}
         cp $(ls . | grep hail*.log) hail_log.txt
-    }
+    >>>
 
     output {
         File output_vcf = output_filename
