@@ -1,0 +1,10 @@
+version: 1.2
+workflows:
+  - name: addDPtoVCF
+    subclass: WDL
+    primaryDescriptorPath: /wdl/addDPtoVCF.wdl
+    filters:
+      branches:
+        - main
+      tags:
+        - /.*/
