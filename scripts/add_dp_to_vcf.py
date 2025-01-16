@@ -18,7 +18,11 @@ hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores,
                     }, tmp_dir="tmp", local_tmpdir="tmp")
 
 print(f"Processing started at: {datetime.datetime.now()}")
+header = hl.get_vcf_metadata(input_vcf)
 mt = hl.import_vcf(input_vcf)
+
+header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}
+header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}
 
 # calculate FORMAT-level DP (sum AD fields per sample)
 print(f"Calculating FORMAT-level DP...")
@@ -28,6 +32,6 @@ mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 print(f"Calculating INFO-level DP...")
 mt = mt.annotate_rows(INFO_DP=hl.agg.sum(mt.AD))
 
-hl.export_vcf(mt, output_vcf)
+hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"Processing finished at: {datetime.datetime.now()}")
 print("Output VCF: ", output_vcf)
