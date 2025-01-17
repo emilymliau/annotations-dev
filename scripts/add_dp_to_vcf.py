@@ -26,20 +26,16 @@ mt = hl.import_vcf(input_vcf, force_bgz=True, array_elements_required=False, cal
 if 'DP' in mt.entry:
     mt = mt.drop(mt.DP)
 if 'DP' in mt.row:
-    mt = mt.drop(mt.DP)
+    mt = mt.drop(mt.info.DP)
 
 # calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...Calculating FORMAT-level DP")
-# mt = mt.annotate_entries(DP=hl.sum(mt.AD))
-mt = mt.annotate_entries(DP=hl.if_else(hl.is_missing(mt.DP), 
-                                       hl.sum(mt.AD), mt.DP))
+mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD per sample).', 'Number': '1', 'Type': 'Integer'}
 
 # calculate INFO-level DP (sum of FORMAT-level DP)
 print(f"...Calculating INFO-level DP")
-# mt = mt.annotate_rows(info=hl.agg.sum(mt.format_DP))
-mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.if_else(hl.is_missing(mt.info.DP),
-                                                          hl.agg.sum(hl.sum(mt.AD)), mt.info.DP)))
+mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
 header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD across samples).', 'Number': '1', 'Type': 'Integer'}
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
