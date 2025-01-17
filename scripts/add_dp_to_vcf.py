@@ -20,7 +20,7 @@ hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores,
 
 print(f"...Processing started at: {datetime.datetime.now()}")
 header = hl.get_vcf_metadata(input_vcf)
-mt = hl.import_vcf(input_vcf, reference_genome=build)
+mt = hl.import_vcf(input_vcf, force_bgz=True, array_elements_required=False, call_fields=[], reference_genome=build)
 
 # calculate FORMAT-level DP (sum AD fields per sample)
 print(f"...Calculating FORMAT-level DP")
