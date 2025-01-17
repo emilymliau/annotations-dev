@@ -10,6 +10,7 @@ input_vcf = sys.argv[1]
 output_vcf = sys.argv[2]
 cores = sys.argv[3]
 mem = int(np.floor(float(sys.argv[4])))
+build = sys.argv[5]
 
 hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores, 
                     "spark.executor.memory": f"{int(np.floor(mem*0.4))}g",
@@ -19,7 +20,7 @@ hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores,
 
 print(f"Processing started at: {datetime.datetime.now()}")
 header = hl.get_vcf_metadata(input_vcf)
-mt = hl.import_vcf(input_vcf)
+mt = hl.import_vcf(input_vcf, reference_genome=build)
 
 header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}
 header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}

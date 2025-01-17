@@ -14,6 +14,7 @@ workflow addDPtoVCF {
         File input_vcf
         String add_dp_python_script
         String hail_docker
+        String genome_build
         RuntimeAttr? runtime_attr_override
     }
 
@@ -22,6 +23,7 @@ workflow addDPtoVCF {
             input_vcf=input_vcf,
             add_dp_python_script=add_dp_python_script,
             hail_docker=hail_docker,
+            genome_build=genome_build,
             runtime_attr_override=runtime_attr_override
     }
 
@@ -36,6 +38,7 @@ task addDP {
         File input_vcf
         String add_dp_python_script
         String hail_docker
+        String genome_build
         RuntimeAttr? runtime_attr_override
     }
     Float input_size = size(input_vcf, 'GB')
@@ -71,7 +74,7 @@ task addDP {
     command <<<
         set -eou pipefail
         curl ~{add_dp_python_script} > add_dp.py
-        python3 add_dp.py ~{input_vcf} ~{output_filename} ~{cpu_cores} ~{memory}
+        python3 add_dp.py ~{input_vcf} ~{output_filename} ~{cpu_cores} ~{memory} ~{genome_build}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
