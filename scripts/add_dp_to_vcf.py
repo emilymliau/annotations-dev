@@ -22,15 +22,17 @@ print(f"...Processing started at: {datetime.datetime.now()}")
 header = hl.get_vcf_metadata(input_vcf)
 mt = hl.import_vcf(input_vcf, force_bgz=True, array_elements_required=False, call_fields=[], reference_genome=build)
 
-# calculate FORMAT-level DP (sum AD fields per sample)
+# calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...Calculating FORMAT-level DP")
-header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}
-mt = mt.annotate_entries(DP=hl.sum(mt.AD))
+header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD per sample).', 'Number': '1', 'Type': 'Integer'}
+mt = mt.annotate_entries(format_DP=hl.sum(mt.AD))
 
 # calculate INFO-level DP (sum of FORMAT-level DP)
 print(f"...Calculating INFO-level DP")
-header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD).', 'Number': '1', 'Type': 'Integer'}
-mt = mt.annotate_rows(DP=hl.agg.sum(mt.DP))
+header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD across samples).', 'Number': '1', 'Type': 'Integer'}
+mt = mt.annotate_rows(info_DP=hl.agg.sum(mt.format_DP))
+
+mt = mt.rename({"format_DP": "DP", "info_DP": "DP"})
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"...Processing completed at: {datetime.datetime.now()}")
