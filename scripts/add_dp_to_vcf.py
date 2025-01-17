@@ -12,8 +12,6 @@ cores = sys.argv[3]
 mem = int(np.floor(float(sys.argv[4])))
 build = sys.argv[5]
 
-prefix = os.path.basename(input_vcf).split('.vcf')[0]
-
 hl.init(min_block_size=128, spark_conf={"spark.executor.cores": cores, 
                     "spark.executor.memory": f"{int(np.floor(mem*0.4))}g",
                     "spark.driver.cores": cores,
@@ -40,8 +38,6 @@ print(f"...calculating INFO-level DP")
 mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
 header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD across samples).', 'Number': '1', 'Type': 'Integer'}
 print(f"...DP calculations completed at: {datetime.datetime.now()}")
-
-output_vcf = prefix + '.dp.vcf.bgz'
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"...VCF export completed at: {datetime.datetime.now()}")

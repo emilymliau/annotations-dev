@@ -69,7 +69,7 @@ task addDP {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String output_filename = sub(basename(input_vcf), ".vcf", "") + ".DP.vcf"
+    String output_filename = sub(basename(input_vcf), ".vcf.bgz", "") + ".DP.vcf.bgz"
 
     command <<<
         set -eou pipefail
