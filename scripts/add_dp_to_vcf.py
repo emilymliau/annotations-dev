@@ -33,9 +33,10 @@ print(f"...calculating FORMAT-level DP")
 mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD per sample).', 'Number': '1', 'Type': 'Integer'}
 
-# calculate INFO-level DP (sum of FORMAT-level DP)
+# calculate INFO-level DP (sum of AD fields across samples)
 print(f"...calculating INFO-level DP")
-mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
+# mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
+mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(hl.sum(mt.AD))))
 header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD across samples).', 'Number': '1', 'Type': 'Integer'}
 print(f"...DP calculations completed at: {datetime.datetime.now()}")
 
