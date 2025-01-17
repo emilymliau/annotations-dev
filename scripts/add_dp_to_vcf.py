@@ -22,6 +22,12 @@ print(f"...Processing started at: {datetime.datetime.now()}")
 header = hl.get_vcf_metadata(input_vcf)
 mt = hl.import_vcf(input_vcf, force_bgz=True, array_elements_required=False, call_fields=[], reference_genome=build)
 
+# drop existing DP fields for testing
+if 'DP' in mt.entry:
+    mt = mt.drop(mt.DP)
+if 'DP' in mt.row:
+    mt = mt.drop(mt.DP)
+
 # calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...Calculating FORMAT-level DP")
 header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD per sample).', 'Number': '1', 'Type': 'Integer'}
