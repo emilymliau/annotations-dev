@@ -14,7 +14,7 @@ workflow addDPtoVCF {
         File input_vcf
         String add_dp_python_script
         String hail_docker
-        String genome_build
+        String genome_build='GRCh38'
         RuntimeAttr? runtime_attr_override
     }
 
