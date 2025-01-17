@@ -30,15 +30,17 @@ if 'DP' in mt.row:
 
 # calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...Calculating FORMAT-level DP")
+# mt = mt.annotate_entries(DP=hl.sum(mt.AD))
+mt = mt.annotate_entries(DP=hl.if_else(hl.is_missing(mt.DP), 
+                                       hl.sum(mt.AD), mt.DP))
 header['format']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD per sample).', 'Number': '1', 'Type': 'Integer'}
-mt = mt.annotate_entries(format_DP=hl.sum(mt.AD))
 
 # calculate INFO-level DP (sum of FORMAT-level DP)
 print(f"...Calculating INFO-level DP")
+# mt = mt.annotate_rows(info=hl.agg.sum(mt.format_DP))
+mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.if_else(hl.is_missing(mt.info.DP),
+                                                          hl.agg.sum(hl.sum(mt.AD)), mt.info.DP)))
 header['info']['DP'] = {'Description': 'Approximate read depth (estimated as sum of AD across samples).', 'Number': '1', 'Type': 'Integer'}
-mt = mt.annotate_rows(info_DP=hl.agg.sum(mt.format_DP))
-
-mt = mt.rename({"format_DP": "DP", "info_DP": "DP"})
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"...Processing completed at: {datetime.datetime.now()}")
