@@ -11,25 +11,30 @@ struct RuntimeAttr {
 
 workflow addDPtoVCF {
     input {
-        File input_vcf
+        # File input_vcf
+        Array[File] vcf_shards
         String add_dp_python_script
         String hail_docker
         String genome_build='GRCh38'
         RuntimeAttr? runtime_attr_override
     }
 
-    call addDP {
+    scatter (vcf_shard in vcf_shards) {
+        call addDP {
         input:
-            input_vcf=input_vcf,
+            input_vcf=vcf_shard,
             add_dp_python_script=add_dp_python_script,
             hail_docker=hail_docker,
             genome_build=genome_build,
             runtime_attr_override=runtime_attr_override
+        }
     }
 
     output {
-        File output_vcf = addDP.output_vcf
-        File output_vcf_idx = addDP.output_vcf_idx
+        # File output_vcf = addDP.output_vcf
+        # File output_vcf_idx = addDP.output_vcf_idx
+        Array[File] output_vcfs = addDP.output_vcf
+        Array[File] output_vcf_idxs = addDP.output_vcf_idx
     }
 }
 

@@ -37,6 +37,7 @@ header['format']['DP'] = {'Description': 'Approximate read depth, estimated as s
 print(f"...calculating INFO-level DP")
 # mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
 mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(hl.sum(mt.AD))))
+
 header['info']['DP'] = {'Description': 'Approximate read depth, estimated as sum of AD across samples.', 'Number': '1', 'Type': 'Integer'}
 print(f"...DP calculations completed at: {datetime.datetime.now()}")
 
