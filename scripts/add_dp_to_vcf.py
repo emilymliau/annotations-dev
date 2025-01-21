@@ -22,6 +22,14 @@ print(f"...VCF processing started at: {datetime.datetime.now()}")
 header = hl.get_vcf_metadata(input_vcf)
 mt = hl.import_vcf(input_vcf, force_bgz=True, array_elements_required=False, call_fields=[], reference_genome=build)
 
+# for haploid calls in VCF (e.g. chrY)
+mt = mt.annotate_entries(
+    GT = hl.if_else(
+            mt.GT.ploidy == 1, 
+            hl.call(mt.GT[0], mt.GT[0]),
+            mt.GT)
+)
+
 # drop existing DP fields for testing
 if 'DP' in mt.entry:
     mt = mt.drop(mt.DP)
