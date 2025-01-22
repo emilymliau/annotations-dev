@@ -179,7 +179,7 @@ task annotateFromBed {
 
     dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
     mt.write(dir_name, overwrite=True)
-    pd.Series([dir_name]).to_csv('noncoding_uri.txt', index=False, header=None)
+    pd.Series([dir_name]).to_csv('noncoding_mt.txt', index=False, header=None)
     # mt.write(noncoding_uri, overwrite=True)
     EOF
     # python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{noncoding_uri} ~{filter}
@@ -187,7 +187,7 @@ task annotateFromBed {
     >>>
 
     output {
-        String noncoding_mt = read_lines('noncoding_uri.txt')[0]
+        String noncoding_mt = read_lines('noncoding_mt.txt')[0]
     }
 }
 
