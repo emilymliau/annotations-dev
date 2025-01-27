@@ -66,13 +66,13 @@ task AddFilterToVCFShard {
     }
 
     command <<<
-        output_vcf="${vcf_shard%.vcf.bgz}.reheader.vcf.bgz"
+        output_vcf="${vcf_shard}.reheader.vcf.bgz"
         bcftools annotate -h ~{missing_filters} -Oz -o $output_vcf ~{vcf_shard}
         tabix $output_vcf
     >>>
 
     output {
-        File updated_vcf = "${vcf_shard%.vcf.bgz}.reheader.vcf.bgz"
-        File updated_vcf_idx = "${vcf_shard%.vcf.bgz}.reheader.vcf.bgz.tbi"
+        File updated_vcf = "${vcf_shard}.reheader.vcf.bgz"
+        File updated_vcf_idx = "${vcf_shard}.reheader.vcf.bgz.tbi"
     }
 }
