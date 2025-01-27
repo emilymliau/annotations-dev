@@ -17,7 +17,7 @@ workflow addFiltertoVCF {
   }
 
   scatter (shard in vcf_shards) {
-    call AddHeaderToVCFShard {
+    call AddFilterToVCFShard {
       input:
         vcf_shard = shard,
         missing_filters = missing_filters,
