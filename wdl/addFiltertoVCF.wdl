@@ -26,8 +26,8 @@ workflow addFiltertoVCF {
   }
 
   output {
-    Array[File] vcfs_with_filter = AddHeaderToVCFShard.updated_vcf
-    Array[File] vcfs_with_filter_idx = AddHeaderToVCFShard.updated_vcf_idx
+    Array[File] vcfs_with_filter = AddFilterToVCFShard.updated_vcf
+    Array[File] vcfs_with_filter_idx = AddFilterToVCFShard.updated_vcf_idx
   }
 }
 
