@@ -13,7 +13,7 @@ struct RuntimeAttr {
     Int? max_retries
 }
 
-workflow vepAnnotateHailExtra {
+workflow vepAnnotateHailExtraMT {
 
     input {
         Array[String] vep_mt_uris
