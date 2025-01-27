@@ -3,6 +3,7 @@ version 1.0
 import "scatterVCF.wdl" as scatterVCF
 import "mergeSplitVCF.wdl" as mergeSplitVCF
 import "mergeVCFs.wdl" as mergeVCFs
+import "helpers.wdl" as helpers
 
 struct RuntimeAttr {
     Float? mem_gb
@@ -140,8 +141,6 @@ task annotateFromBed {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    # String noncoding_uri = sub(basename(mt_uri), "_vep.mt", "") + '_noncoding_annot.mt'
-   
     command <<<
     cat <<EOF > annotate_noncoding.py
     from pyspark.sql import SparkSession
@@ -156,8 +155,6 @@ task annotateFromBed {
     cores = sys.argv[3]  # string
     mem = int(np.floor(float(sys.argv[4])))
     build = sys.argv[5]
-    # noncoding_uri = sys.argv[6]
-    # filter = ast.literal_eval(sys.argv[7].capitalize())
     filter = ast.literal_eval(sys.argv[6].capitalize())
 
     hl.init(min_block_size=128, 
@@ -180,9 +177,7 @@ task annotateFromBed {
     dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
     mt.write(dir_name, overwrite=True)
     pd.Series([dir_name]).to_csv('noncoding_mt.txt', index=False, header=None)
-    # mt.write(noncoding_uri, overwrite=True)
     EOF
-    # python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{noncoding_uri} ~{filter}
     python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{filter}
     >>>
 
