@@ -72,7 +72,7 @@ task AddFilterToVCFShard {
     >>>
 
     output {
-        File updated_vcf = "~{vcf_shard}.reheader.vcf.bgz"
-        File updated_vcf_idx = "~{vcf_shard}.reheader.vcf.bgz.tbi"
+        File updated_vcf = "${vcf_shard%.vcf.bgz}.reheader.vcf.bgz"
+        File updated_vcf_idx = "${vcf_shard%.vcf.bgz}.reheader.vcf.bgz.tbi"
     }
 }
