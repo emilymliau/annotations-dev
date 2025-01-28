@@ -111,6 +111,7 @@ task annotateFromBed {
         String hail_docker
         String genome_build
         Boolean filter
+        String bucket_id # added
         RuntimeAttr? runtime_attr_override
     }
     # Float input_size = size(mt_uri, 'GB')
@@ -156,6 +157,7 @@ task annotateFromBed {
     mem = int(np.floor(float(sys.argv[4])))
     build = sys.argv[5]
     filter = ast.literal_eval(sys.argv[6].capitalize())
+    bucket_id = sys.argv[7] # added
 
     hl.init(min_block_size=128, 
             local=f"local[*]", 
