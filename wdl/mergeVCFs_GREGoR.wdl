@@ -131,8 +131,8 @@ task mergeVCFs {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String merged_vcf_name="~{cohort_prefix}.merged.vcf.gz"
-    String sorted_vcf_name="~{cohort_prefix}.merged.sorted.vcf.gz"
+    String merged_vcf_name="~{cohort_prefix}.merged.vcf.bgz"
+    String sorted_vcf_name="~{cohort_prefix}.merged.sorted.vcf.bgz"
     String naive_str = if naive then '-n' else ''
     String overlap_str = if allow_overlaps then '-a' else ''
 
@@ -144,23 +144,23 @@ task mergeVCFs {
         
         echo '##FILTER=<ID=LowQual,Description="Low quality">' > header_lines.txt
         echo '##FILTER=<ID=NO_HQ_GENOTYPES,Description="Sites with this filter do not have any genotypes that are considered high quality">' >> header_lines.txt
-        cat header_lines.txt ~{merged_vcf_name} > merged_with_headers.vcf.gz
-        mv merged_with_headers.vcf.gz ~{merged_vcf_name}
+        cat header_lines.txt ~{merged_vcf_name} > merged_with_headers.vcf.bgz
+        mv merged_with_headers.vcf.bgz ~{merged_vcf_name}
 
-        bgzip -c ~{merged_vcf_name} > ~{merged_vcf_name}.bgz
-        tabix ~{merged_vcf_name}.bgz
+        bgzip -c ~{merged_vcf_name} > ~{merged_vcf_name}
+        tabix ~{merged_vcf_name}
 
         if [ "~{sort_after_merge}" = "true" ]; then
             mkdir -p tmp
-            bcftools sort ~{merged_vcf_name}.bgz -Oz --output ~{sorted_vcf_name} -T tmp/
+            bcftools sort ~{merged_vcf_name} -Oz --output ~{sorted_vcf_name} -T tmp/
             tabix ~{sorted_vcf_name}
         else 
-            tabix ~{merged_vcf_name}.bgz
+            tabix ~{merged_vcf_name}
         fi
     >>>
 
     output {
-        File merged_vcf_file = if sort_after_merge then sorted_vcf_name else merged_vcf_name + ".bgz"
-        File merged_vcf_idx = if sort_after_merge then sorted_vcf_name + ".tbi" else merged_vcf_name + ".bgz.tbi"
+        File merged_vcf_file = if sort_after_merge then sorted_vcf_name else merged_vcf_name
+        File merged_vcf_idx = if sort_after_merge then sorted_vcf_name + ".tbi" else merged_vcf_name + ".tbi"
     }
 }
