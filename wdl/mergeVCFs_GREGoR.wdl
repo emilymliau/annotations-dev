@@ -147,17 +147,20 @@ task mergeVCFs {
         cat header_lines.txt ~{merged_vcf_name} > merged_with_headers.vcf.gz
         mv merged_with_headers.vcf.gz ~{merged_vcf_name}
 
+        bgzip -c ~{merged_vcf_name} > ~{merged_vcf_name}.bgz
+        tabix ~{merged_vcf_name}.bgz
+
         if [ "~{sort_after_merge}" = "true" ]; then
             mkdir -p tmp
             bcftools sort ~{merged_vcf_name} -Oz --output ~{sorted_vcf_name} -T tmp/
             tabix ~{sorted_vcf_name}
         else 
-            tabix ~{merged_vcf_name}
+            tabix ~{merged_vcf_name}.bgz
         fi
     >>>
 
     output {
-        File merged_vcf_file = if sort_after_merge then sorted_vcf_name else merged_vcf_name
-        File merged_vcf_idx = if sort_after_merge then sorted_vcf_name + ".tbi" else merged_vcf_name + ".tbi"
+        File merged_vcf_file = if sort_after_merge then sorted_vcf_name else merged_vcf_name + ".bgz"
+        File merged_vcf_idx = if sort_after_merge then sorted_vcf_name + ".tbi" else merged_vcf_name + ".bgz.tbi"
     }
 }
