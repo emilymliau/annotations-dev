@@ -152,7 +152,7 @@ task mergeVCFs {
 
         if [ "~{sort_after_merge}" = "true" ]; then
             mkdir -p tmp
-            bcftools sort ~{merged_vcf_name} -Oz --output ~{sorted_vcf_name} -T tmp/
+            bcftools sort ~{merged_vcf_name}.bgz -Oz --output ~{sorted_vcf_name} -T tmp/
             tabix ~{sorted_vcf_name}
         else 
             tabix ~{merged_vcf_name}.bgz
