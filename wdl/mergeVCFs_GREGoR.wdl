@@ -141,22 +141,16 @@ task mergeVCFs {
         VCFS="~{write_lines(vcf_files)}"
         cat $VCFS | awk -F '/' '{print $NF"\t"$0}' | sort -k1,1V | awk '{print $2}' > vcfs_sorted.list
         bcftools concat ~{naive_str} ~{overlap_str} --no-version -Oz --file-list vcfs_sorted.list --output ~{merged_vcf_name}
-        
-        echo '##FILTER=<ID=LowQual,Description="Low quality">' > header_lines.txt
-        echo '##FILTER=<ID=NO_HQ_GENOTYPES,Description="Sites with this filter do not have any genotypes that are considered high quality">' >> header_lines.txt
-        cat header_lines.txt ~{merged_vcf_name} > merged_with_headers.vcf.bgz
-        mv merged_with_headers.vcf.bgz ~{merged_vcf_name}
-
-        bgzip -c ~{merged_vcf_name} > ~{merged_vcf_name}
-        tabix ~{merged_vcf_name}
-
         if [ "~{sort_after_merge}" = "true" ]; then
             mkdir -p tmp
             bcftools sort ~{merged_vcf_name} -Oz --output ~{sorted_vcf_name} -T tmp/
+            # cat ~{merged_vcf_name} | zcat | awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1V -k2,2n"}' > ~{basename(sorted_vcf_name, '.gz')}
+            # bgzip ~{basename(sorted_vcf_name, '.gz')}
             tabix ~{sorted_vcf_name}
         else 
             tabix ~{merged_vcf_name}
         fi
+
     >>>
 
     output {
