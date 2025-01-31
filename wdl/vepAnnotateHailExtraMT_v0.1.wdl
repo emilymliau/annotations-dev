@@ -240,13 +240,13 @@ task annotateExtra {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String filename = basename(mt_uri)
-    String prefix = basename(mt_uri, "_vep.mt")
-    String vep_annotated_mt_name = "~{prefix}.annot.mt"
+    # String filename = basename(mt_uri)
+    # String prefix = basename(mt_uri, ".mt")
+    # String vep_annotated_mt_name = "~{prefix}.annot.mt"
 
     command <<<
         curl ~{vep_annotate_hail_extra_mt_python_script} > annotate.py
-        python3 annotate.py -i ~{mt_uri} -o ~{vep_annotated_mt_name} --cores ~{cpu_cores} --mem ~{memory} \
+        python3 annotate.py -i ~{mt_uri} --cores ~{cpu_cores} --mem ~{memory} \
         --build ~{genome_build} --loeuf-v2 ~{loeuf_v2_uri} --loeuf-v4 ~{loeuf_v4_uri} \
         --mpc ~{mpc_ht_uri} --clinvar ~{clinvar_vcf_uri} --omim ~{omim_uri} \
         --revel ~{revel_file} --genes ~{gene_list} --bucket-id ~{bucket_id}
@@ -254,7 +254,8 @@ task annotateExtra {
     >>>
 
     output {
-        String annot_mt_uri = vep_annotated_mt_name
+        # String annot_mt_uri = vep_annotated_mt_name
+        String annot_mt_uri = read_lines('annot_mt.txt')[0]
         File hail_log = "hail_log.txt"
     }
 }
@@ -297,9 +298,9 @@ task annotateSpliceAI {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String filename = basename(mt_uri)
-    String prefix = basename(mt_uri, "_vep.mt")
-    String vep_annotated_mt_name = "~{prefix}.SpliceAI.annot.mt"
+    # String filename = basename(mt_uri)
+    # String prefix = basename(mt_uri, "_vep.mt")
+    # String vep_annotated_mt_name = "~{prefix}.SpliceAI.annot.mt"
 
     command <<<
     cat <<EOF > annotate.py
@@ -311,26 +312,34 @@ task annotateSpliceAI {
     import ast
     import os
     import json
-    import argparse
+    # import argparse
 
-    parser = argparse.ArgumentParser(description='Parse arguments')
-    parser.add_argument('-i', dest='mt_uri', help='Input MT file')
-    parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output filename')
-    parser.add_argument('--cores', dest='cores', help='CPU cores')
-    parser.add_argument('--mem', dest='mem', help='Memory')
-    parser.add_argument('--build', dest='build', help='Genome build')
-    parser.add_argument('--spliceAI-uri', dest='spliceAI_uri', help='SpliceAI scores SNV/Indel HT')
-    parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
+    # parser = argparse.ArgumentParser(description='Parse arguments')
+    # parser.add_argument('-i', dest='mt_uri', help='Input MT file')
+    # parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output filename')
+    # parser.add_argument('--cores', dest='cores', help='CPU cores')
+    # parser.add_argument('--mem', dest='mem', help='Memory')
+    # parser.add_argument('--build', dest='build', help='Genome build')
+    # parser.add_argument('--spliceAI-uri', dest='spliceAI_uri', help='SpliceAI scores SNV/Indel HT')
+    # parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    mt_uri = args.mt_uri
-    vep_annotated_mt_name = args.vep_annotated_mt_name
-    cores = args.cores  # string
-    mem = int(np.floor(float(args.mem)))
-    build = args.build
-    spliceAI_uri = args.spliceAI_uri
-    bucket_id = args.bucket_id
+    # mt_uri = args.mt_uri
+    # vep_annotated_mt_name = args.vep_annotated_mt_name
+    # cores = args.cores  # string
+    # mem = int(np.floor(float(args.mem)))
+    # build = args.build
+    # spliceAI_uri = args.spliceAI_uri
+    # bucket_id = args.bucket_id
+
+    mt_uri = sys.argv[1]
+    vep_annotated_mt_name = sys.argv[2]
+    cores = sys.argv[3]
+    mem = int(np.floor(float(sys.argv[4])))
+    build = sys.argv[5]
+    spliceAI_uri = sys.argv[6]
+    bucket_id = sys.argv[7]
 
     hl.init(min_block_size=128, 
             local=f"local[*]", 
@@ -386,15 +395,22 @@ task annotateSpliceAI {
     mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CSQ))
     mt = mt.drop('vep')
 
-    mt.write(vep_annotated_mt_name, overwrite=True)
+    # mt.write(vep_annotated_mt_name, overwrite=True)
+
+    dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI.annot.mt"
+    mt.write(dir_name, overwrite=True)
+    pd.Series([dir_name]).to_csv('spliceAI_mt.txt', index=False, header=None)
     EOF
-    python3 annotate.py -i ~{mt_uri} -o ~{vep_annotated_mt_name} --cores ~{cpu_cores} --mem ~{memory} \
+    python3 annotate.py -i ~{mt_uri} --cores ~{cpu_cores} --mem ~{memory} \
     --build ~{genome_build} --spliceAI-uri ~{spliceAI_uri} --bucket-id ~{bucket_id}
     cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
     output {
-        String annot_mt_uri = vep_annotated_mt_name
+        # String annot_mt_uri = vep_annotated_mt_name
+        # File hail_log = "hail_log.txt"
+
+        String annot_mt_uri = read_lines('spliceAI_mt.txt')[0]
         File hail_log = "hail_log.txt"
     }
 }
