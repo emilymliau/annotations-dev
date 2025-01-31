@@ -42,7 +42,6 @@ workflow vepAnnotateHailExtraMT {
         RuntimeAttr? runtime_attr_annotate_noncoding
         RuntimeAttr? runtime_attr_annotate_extra
         RuntimeAttr? runtime_attr_annotate_spliceAI
-        RuntimeAttr? runtime_attr_annotate_add_genotypes
     }
 
     scatter (mt_uri in vep_mt_uris) {
