@@ -48,12 +48,12 @@ workflow vepAnnotateHailExtra {
         if (noncoding_bed!='NA') {
             call annotateFromBed as annotateNonCoding {
                 input:
-                mt_file=mt_shard,
-                noncoding_bed=select_first([noncoding_bed]),
-                hail_docker=hail_docker,
-                genome_build=genome_build,
-                filter=false,
-                runtime_attr_override=runtime_attr_annotate_noncoding
+                    mt_file=mt_shard,
+                    noncoding_bed=select_first([noncoding_bed]),
+                    hail_docker=hail_docker,
+                    genome_build=genome_build,
+                    filter=false,
+                    runtime_attr_override=runtime_attr_annotate_noncoding
             }
         }
 
@@ -87,11 +87,11 @@ workflow vepAnnotateHailExtra {
 
         call helpers.addGenotypes as addGenotypes {
             input:
-            annot_mt_file=annot_mt_file,
-            mt_file=mt_shard,
-            genome_build=genome_build,
-            hail_docker=hail_docker,
-            runtime_attr_override=runtime_attr_annotate_add_genotypes
+                annot_mt_file=annot_mt_file,
+                mt_file=mt_shard,
+                genome_build=genome_build,
+                hail_docker=hail_docker,
+                runtime_attr_override=runtime_attr_annotate_add_genotypes
         }
     }
 
@@ -259,6 +259,7 @@ task annotateSpliceAI {
     Float input_size = size(mt_file, "GB")
     Float base_disk_gb = 10.0
     Float input_disk_scale = 10.0
+
     RuntimeAttr runtime_default = object {
         mem_gb: 8,
         disk_gb: ceil(base_disk_gb + input_size * input_disk_scale),
@@ -327,6 +328,7 @@ task annotateSpliceAI {
     mt = hl.read_matrix_table(mt_file)
 
     csq_columns = mt.info.CSQ[0].split('|')
+    
     # split VEP CSQ string
     mt = mt.annotate_rows(vep=mt.info)
     transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
