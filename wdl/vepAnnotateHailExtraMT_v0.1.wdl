@@ -152,6 +152,7 @@ task annotateFromBed {
     import ast
     import os
     import datetime
+    import pandas as pd
 
     mt_uri = sys.argv[1]
     noncoding_bed = sys.argv[2]
