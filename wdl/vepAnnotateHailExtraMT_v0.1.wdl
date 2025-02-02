@@ -334,12 +334,12 @@ task annotateSpliceAI {
     # bucket_id = args.bucket_id
 
     mt_uri = sys.argv[1]
-    vep_annotated_mt_name = sys.argv[2]
-    cores = sys.argv[3]
-    mem = int(np.floor(float(sys.argv[4])))
-    build = sys.argv[5]
-    spliceAI_uri = sys.argv[6]
-    bucket_id = sys.argv[7]
+    # vep_annotated_mt_name = sys.argv[2]
+    cores = sys.argv[2]
+    mem = int(np.floor(float(sys.argv[3])))
+    build = sys.argv[4]
+    spliceAI_uri = sys.argv[5]
+    bucket_id = sys.argv[6]
 
     hl.init(min_block_size=128, 
             local=f"local[*]", 
@@ -359,9 +359,9 @@ task annotateSpliceAI {
 
     transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
                                                         {col: x[i] if col!='Consequence' else x[i].split('&')  
-                                                            for i, col in enumerate(csq_columns)}), 
+                                                            for i, col in hl.enumerate(csq_columns)}), 
                                                             hl.struct(**{col: hl.missing('str') if col!='Consequence' else hl.array([hl.missing('str')])  
-                                                            for i, col in enumerate(csq_columns)})))
+                                                            for i, col in hl.enumerate(csq_columns)})))
 
     mt = mt.annotate_rows(vep=mt.vep.annotate(transcript_consequences=transcript_consequences_strs))
     mt = mt.annotate_rows(vep=mt.vep.select('transcript_consequences'))

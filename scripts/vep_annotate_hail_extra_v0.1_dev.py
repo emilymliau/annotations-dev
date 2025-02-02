@@ -11,7 +11,7 @@ import datetime
 
 parser = argparse.ArgumentParser(description='Parse arguments')
 parser.add_argument('-i', dest='mt_uri', help='Input MT file', required=True)
-# parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
+parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
 parser.add_argument('--cores', dest='cores', help='CPU cores', required=True)
 parser.add_argument('--mem', dest='mem', help='Memory in GB', required=True)
 parser.add_argument('--build', dest='build', help='Genome build', required=True)
@@ -30,7 +30,7 @@ parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 args = parser.parse_args()
 
 mt_uri = args.mt_uri
-# vep_annotated_mt_name = args.vep_annotated_mt_name
+vep_annotated_mt_name = args.vep_annotated_mt_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
 build = args.build
@@ -87,9 +87,9 @@ transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
 
 transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
                                                        {col: x[i] if col!='Consequence' else x[i].split('&')  
-                                                        for i, col in enumerate(csq_columns)}), 
+                                                        for i, col in hl.enumerate(csq_columns)}), 
                                                         hl.struct(**{col: hl.missing('str') if col!='Consequence' else hl.array([hl.missing('str')])  
-                                                        for i, col in enumerate(csq_columns)})))
+                                                        for i, col in hl.enumerate(csq_columns)})))
 
 mt = mt.annotate_rows(vep=mt.vep.annotate(transcript_consequences=transcript_consequences_strs))
 mt = mt.annotate_rows(vep=mt.vep.select('transcript_consequences'))
@@ -147,5 +147,5 @@ mt = mt.drop('vep')
 # mt.write(vep_annotated_mt_name, overwrite=True)
 
 dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.annot.mt"
-mt.write(dir_name, overwrite=True)
+mt.write(vep_annotated_mt_name, overwrite=True)
 pd.Series([dir_name]).to_csv('annot_mt.txt', index=False, header=None)
