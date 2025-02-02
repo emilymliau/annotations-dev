@@ -179,9 +179,9 @@ task annotateFromBed {
     if filter:
         mt = mt.filter_rows(hl.is_defined(mt.info.PREDICTED_NONCODING))
 
-    dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
-    mt.write(dir_name, overwrite=True)
-    pd.Series([dir_name]).to_csv('noncoding_mt.txt', index=False, header=None)
+    filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('_vep.mt')[0]}_noncoding_annot.mt"
+    mt.write(filename, overwrite=True)
+    pd.Series([filename]).to_csv('noncoding_mt.txt', index=False, header=None)
     EOF
     python3 annotate_noncoding.py ~{mt_uri} ~{noncoding_bed} ~{cpu_cores} ~{memory} ~{genome_build} ~{bucket_id} ~{filter}
     cp $(ls . | grep hail*.log) hail_log.txt
@@ -397,9 +397,9 @@ task annotateSpliceAI {
 
     # mt.write(vep_annotated_mt_name, overwrite=True)
 
-    dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI.annot.mt"
-    mt.write(dir_name, overwrite=True)
-    pd.Series([dir_name]).to_csv('spliceAI_mt.txt', index=False, header=None)
+    filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI.annot.mt"
+    mt.write(filename, overwrite=True)
+    pd.Series([filename]).to_csv('spliceAI_mt.txt', index=False, header=None)
     EOF
     python3 annotate.py -i ~{mt_uri} --cores ~{cpu_cores} --mem ~{memory} \
     --build ~{genome_build} --spliceAI-uri ~{spliceAI_uri} --bucket-id ~{bucket_id}

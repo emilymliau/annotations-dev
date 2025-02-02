@@ -11,7 +11,7 @@ import datetime
 
 parser = argparse.ArgumentParser(description='Parse arguments')
 parser.add_argument('-i', dest='mt_uri', help='Input MT file', required=True)
-parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
+# parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
 parser.add_argument('--cores', dest='cores', help='CPU cores', required=True)
 parser.add_argument('--mem', dest='mem', help='Memory in GB', required=True)
 parser.add_argument('--build', dest='build', help='Genome build', required=True)
@@ -30,7 +30,7 @@ parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 args = parser.parse_args()
 
 mt_uri = args.mt_uri
-vep_annotated_mt_name = args.vep_annotated_mt_name
+# vep_annotated_mt_name = args.vep_annotated_mt_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
 build = args.build
@@ -146,6 +146,6 @@ mt = mt.drop('vep')
 # pd.Series([filename]).to_csv('mt_uri.txt',index=False, header=None)
 # mt.write(vep_annotated_mt_name, overwrite=True)
 
-dir_name = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.annot.mt"
-mt.write(vep_annotated_mt_name, overwrite=True)
-pd.Series([dir_name]).to_csv('annot_mt.txt', index=False, header=None)
+filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.annot.mt"
+mt.write(filename, overwrite=True)
+pd.Series([filename]).to_csv('annot_mt.txt', index=False, header=None)
