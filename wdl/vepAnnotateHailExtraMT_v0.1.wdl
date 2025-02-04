@@ -357,17 +357,17 @@ task annotateSpliceAI {
     mt = mt.annotate_rows(vep=mt.info)
     transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
 
-    # transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
-    #                                                     {col: x[i] if col!='Consequence' else x[i].split('&')  
-    #                                                         for i, col in hl.enumerate(csq_columns)}), 
-    #                                                         hl.struct(**{col: hl.missing('str') if col!='Consequence' else hl.array([hl.missing('str')])  
-    #                                                         for i, col in hl.enumerate(csq_columns)})))
-
     transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x) > 1, 
                                                                 hl.struct(**{col: x[i] if col != 'Consequence' else x[i].split('&') 
-                                                                    for i, col in zip(hl.range(0, len(csq_columns)), csq_columns)}), 
+                                                                    for i, col in zip(hl.range(0, hl.len(csq_columns)), csq_columns)}), 
                                                                 hl.struct(**{col: hl.missing('str') if col != 'Consequence' else hl.array([hl.missing('str')]) 
                                                                     for col in csq_columns})))
+
+    # transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x) > 1, 
+    #                                                             hl.struct(**{col: x[i] if col != 'Consequence' else x[i].split('&') 
+    #                                                                 for i, col in zip(hl.range(0, hl.len(csq_columns)), csq_columns)}), 
+    #                                                             hl.struct(**{col: hl.missing('str') if col != 'Consequence' else hl.array([hl.missing('str')]) 
+    #                                                                 for col in csq_columns})))
 
     mt = mt.annotate_rows(vep=mt.vep.annotate(transcript_consequences=transcript_consequences_strs))
     mt = mt.annotate_rows(vep=mt.vep.select('transcript_consequences'))
