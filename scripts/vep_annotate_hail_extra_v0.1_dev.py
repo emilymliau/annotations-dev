@@ -52,7 +52,6 @@ hl.init(min_block_size=128,
                     )
 
 mt = hl.read_matrix_table(mt_uri)
-prefix = os.path.basename(mt_uri).split('.mt')[0]
 
 # annotate MPC
 mpc = hl.read_table(mpc_ht_uri).key_by('locus','alleles')
@@ -80,7 +79,7 @@ csq_columns = 'Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYP
 
 # split VEP CSQ string
 mt = mt.annotate_rows(vep=mt.info)
-transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('|'))
+transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
 
 transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
                                                        {col: x[i] if col!='Consequence' else x[i].split('&')  
