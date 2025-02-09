@@ -312,34 +312,24 @@ task annotateSpliceAI {
     import ast
     import os
     import json
-    # import argparse
+    import argparse
 
-    # parser = argparse.ArgumentParser(description='Parse arguments')
-    # parser.add_argument('-i', dest='mt_uri', help='Input MT file')
-    # parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output filename')
-    # parser.add_argument('--cores', dest='cores', help='CPU cores')
-    # parser.add_argument('--mem', dest='mem', help='Memory')
-    # parser.add_argument('--build', dest='build', help='Genome build')
-    # parser.add_argument('--spliceAI-uri', dest='spliceAI_uri', help='SpliceAI scores SNV/Indel HT')
-    # parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
+    parser = argparse.ArgumentParser(description='Parse arguments')
+    parser.add_argument('-i', dest='mt_uri', help='Input MT file')
+    parser.add_argument('--cores', dest='cores', help='CPU cores')
+    parser.add_argument('--mem', dest='mem', help='Memory')
+    parser.add_argument('--build', dest='build', help='Genome build')
+    parser.add_argument('--spliceAI-uri', dest='spliceAI_uri', help='SpliceAI scores SNV/Indel HT')
+    parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 
-    # args = parser.parse_args()
+    args = parser.parse_args()
 
-    # mt_uri = args.mt_uri
-    # vep_annotated_mt_name = args.vep_annotated_mt_name
-    # cores = args.cores  # string
-    # mem = int(np.floor(float(args.mem)))
-    # build = args.build
-    # spliceAI_uri = args.spliceAI_uri
-    # bucket_id = args.bucket_id
-
-    mt_uri = sys.argv[1]
-    # vep_annotated_mt_name = sys.argv[2]
-    cores = sys.argv[2]
-    mem = int(np.floor(float(sys.argv[3])))
-    build = sys.argv[4]
-    spliceAI_uri = sys.argv[5]
-    bucket_id = sys.argv[6]
+    mt_uri = args.mt_uri
+    cores = args.cores  # string
+    mem = int(np.floor(float(args.mem)))
+    build = args.build
+    spliceAI_uri = args.spliceAI_uri
+    bucket_id = args.bucket_id
 
     hl.init(min_block_size=128, 
             local=f"local[*]", 
@@ -352,22 +342,17 @@ task annotateSpliceAI {
 
     mt = hl.read_matrix_table(mt_uri)
 
-    csq_columns = mt.info.CSQ[0].split('|')
+    csq_columns = 'Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|ALLELE_NUM|DISTANCE|STRAND|FLAGS|VARIANT_CLASS|MINIMISED|SYMBOL_SOURCE|HGNC_ID|CANONICAL|MANE_SELECT|MANE_PLUS_CLINICAL|TSL|APPRIS|CCDS|ENSP|SWISSPROT|TREMBL|UNIPARC|UNIPROT_ISOFORM|GENE_PHENO|SIFT|PolyPhen|DOMAINS|miRNA|HGVS_OFFSET|AF|AFR_AF|AMR_AF|EAS_AF|EUR_AF|SAS_AF|gnomADe_AF|gnomADe_AFR_AF|gnomADe_AMR_AF|gnomADe_ASJ_AF|gnomADe_EAS_AF|gnomADe_FIN_AF|gnomADe_NFE_AF|gnomADe_OTH_AF|gnomADe_SAS_AF|gnomADg_AF|gnomADg_AFR_AF|gnomADg_AMI_AF|gnomADg_AMR_AF|gnomADg_ASJ_AF|gnomADg_EAS_AF|gnomADg_FIN_AF|gnomADg_MID_AF|gnomADg_NFE_AF|gnomADg_OTH_AF|gnomADg_SAS_AF|MAX_AF|MAX_AF_POPS|CLIN_SIG|SOMATIC|PHENO|PUBMED|MOTIF_NAME|MOTIF_POS|HIGH_INF_POS|MOTIF_SCORE_CHANGE|TRANSCRIPTION_FACTORS|am_class|am_pathogenicity|EVE_CLASS|EVE_SCORE|LOEUF_v2|LOEUF_v2_decile|LOEUF_v4|LOEUF_v4_decile|OMIM_MIM_number|OMIM_inheritance_code|gene_list'.split('|')
+
     # split VEP CSQ string
     mt = mt.annotate_rows(vep=mt.info)
     transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
 
     transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
-                                                            {col: x[i] if col!='Consequence' else x[i].split('&')  
-                                                                for i, col in hl.enumerate(csq_columns)}), 
-                                                                hl.struct(**{col: hl.missing('str') if col!='Consequence' else hl.array([hl.missing('str')])  
-                                                                for i, col in hl.enumerate(csq_columns)})))
-
-    # transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x) > 1, 
-    #                                                             hl.struct(**{col: x[i] if col != 'Consequence' else x[i].split('&') 
-    #                                                                 for i, col in zip(hl.range(0, hl.len(csq_columns)), csq_columns)}), 
-    #                                                             hl.struct(**{col: hl.missing('str') if col != 'Consequence' else hl.array([hl.missing('str')]) 
-    #                                                                 for col in csq_columns})))
+                                                           {col: x[i] if col!='Consequence' else x[i].split('&')  
+                                                            for i, col in enumerate(csq_columns)}), 
+                                                            hl.struct(**{col: hl.missing('str') if col!='Consequence' else hl.array([hl.missing('str')])  
+                                                            for i, col in enumerate(csq_columns)})))
 
     mt = mt.annotate_rows(vep=mt.vep.annotate(transcript_consequences=transcript_consequences_strs))
     mt = mt.annotate_rows(vep=mt.vep.select('transcript_consequences'))
@@ -401,8 +386,6 @@ task annotateSpliceAI {
     mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CSQ))
     mt = mt.drop('vep')
 
-    # mt.write(vep_annotated_mt_name, overwrite=True)
-
     filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI.annot.mt"
     mt.write(filename, overwrite=True)
     pd.Series([filename]).to_csv('spliceAI_mt.txt', index=False, header=None)
@@ -413,9 +396,6 @@ task annotateSpliceAI {
     >>>
 
     output {
-        # String annot_mt_uri = vep_annotated_mt_name
-        # File hail_log = "hail_log.txt"
-
         String annot_mt_uri = read_lines('spliceAI_mt.txt')[0]
         File hail_log = "hail_log.txt"
     }

@@ -11,7 +11,6 @@ import datetime
 
 parser = argparse.ArgumentParser(description='Parse arguments')
 parser.add_argument('-i', dest='mt_uri', help='Input MT file', required=True)
-# parser.add_argument('-o', dest='vep_annotated_mt_name', help='Output Matrix Table filename', required=True)
 parser.add_argument('--cores', dest='cores', help='CPU cores', required=True)
 parser.add_argument('--mem', dest='mem', help='Memory in GB', required=True)
 parser.add_argument('--build', dest='build', help='Genome build', required=True)
@@ -24,13 +23,11 @@ parser.add_argument('--loeuf-v4', dest='loeuf_v4_uri', help='LOEUF scores from g
 parser.add_argument('--spliceAI-snv', dest='spliceAI_snv_uri', help='SpliceAI scores SNV HT')
 parser.add_argument('--spliceAI-indel', dest='spliceAI_indel_uri', help='SpliceAI scores Indel HT')
 parser.add_argument('--genes', dest='gene_list', help='OPTIONAL: Gene list txt file')
-# parser.add_argument('--project-id', dest='project_id', help='Google Project ID')
 parser.add_argument('--bucket-id', dest='bucket_id', help='Google Bucket ID')
 
 args = parser.parse_args()
 
 mt_uri = args.mt_uri
-# vep_annotated_mt_name = args.vep_annotated_mt_name
 cores = args.cores  # string
 mem = int(np.floor(float(args.mem)))
 build = args.build
@@ -43,7 +40,6 @@ loeuf_v4_uri = args.loeuf_v4_uri
 spliceAI_snv_uri = args.spliceAI_snv_uri
 spliceAI_indel_uri = args.spliceAI_indel_uri
 gene_list = args.gene_list
-# gcp_project = args.project_id
 bucket_id = args.bucket_id
 
 hl.init(min_block_size=128, 
@@ -143,10 +139,6 @@ mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CS
 mt = mt.drop('vep')
 
 # export annotated MT
-# filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d_%H-%M'))}/{prefix}_vep_annot_extra.mt"
-# pd.Series([filename]).to_csv('mt_uri.txt',index=False, header=None)
-# mt.write(vep_annotated_mt_name, overwrite=True)
-
 filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.annot.mt"
 mt.write(filename, overwrite=True)
 pd.Series([filename]).to_csv('annot_mt.txt', index=False, header=None)
