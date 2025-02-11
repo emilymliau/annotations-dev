@@ -346,8 +346,8 @@ task annotateSpliceAI {
 
     # split VEP CSQ string
     mt = mt.annotate_rows(vep=mt.info)
-    # transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
-    transcript_consequences = mt.vep.CSQ.split('\|')
+    transcript_consequences = mt.vep.CSQ.map(lambda x: x.split('\|'))
+    # transcript_consequences = mt.vep.CSQ.split('\|')
 
     transcript_consequences_strs = transcript_consequences.map(lambda x: hl.if_else(hl.len(x)>1, hl.struct(**
                                                            {col: x[i] if col!='Consequence' else x[i].split('&')  
@@ -387,7 +387,7 @@ task annotateSpliceAI {
     mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CSQ))
     mt = mt.drop('vep')
 
-    filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI.annot.mt"
+    filename = f"{bucket_id}/{str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M'))}/{os.path.basename(mt_uri).split('.mt')[0]}.SpliceAI_annot.mt"
     mt.write(filename, overwrite=True)
     pd.Series([filename]).to_csv('spliceAI_mt.txt', index=False, header=None)
     EOF
