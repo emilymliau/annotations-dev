@@ -75,7 +75,6 @@ revel_ht = revel_ht.annotate(locus=hl.locus(revel_ht[build_chr], hl.int(revel_ht
 revel_ht = revel_ht.key_by('locus', 'alleles')
 mt = mt.annotate_rows(info=mt.info.annotate(REVEL=revel_ht[mt.row_key].REVEL))
 
-# csq_columns = 'Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|ALLELE_NUM|DISTANCE|STRAND|FLAGS|VARIANT_CLASS|MINIMISED|SYMBOL_SOURCE|HGNC_ID|CANONICAL|MANE_SELECT|MANE_PLUS_CLINICAL|TSL|APPRIS|CCDS|ENSP|SWISSPROT|TREMBL|UNIPARC|UNIPROT_ISOFORM|GENE_PHENO|SIFT|PolyPhen|DOMAINS|miRNA|HGVS_OFFSET|AF|AFR_AF|AMR_AF|EAS_AF|EUR_AF|SAS_AF|gnomADe_AF|gnomADe_AFR_AF|gnomADe_AMR_AF|gnomADe_ASJ_AF|gnomADe_EAS_AF|gnomADe_FIN_AF|gnomADe_NFE_AF|gnomADe_OTH_AF|gnomADe_SAS_AF|gnomADg_AF|gnomADg_AFR_AF|gnomADg_AMI_AF|gnomADg_AMR_AF|gnomADg_ASJ_AF|gnomADg_EAS_AF|gnomADg_FIN_AF|gnomADg_MID_AF|gnomADg_NFE_AF|gnomADg_OTH_AF|gnomADg_SAS_AF|MAX_AF|MAX_AF_POPS|CLIN_SIG|SOMATIC|PHENO|PUBMED|MOTIF_NAME|MOTIF_POS|HIGH_INF_POS|MOTIF_SCORE_CHANGE|TRANSCRIPTION_FACTORS|am_class|am_pathogenicity|EVE_CLASS|EVE_SCORE'.split('|')
 csq_columns = mt.globals.collect()[0].vep_csq_header.rsplit(" ", 1)[-1].split('|')
 
 # split VEP CSQ string
@@ -129,11 +128,6 @@ mt_by_gene = (mt_by_gene.group_rows_by(mt_by_gene.locus, mt_by_gene.alleles)
     .aggregate_rows(vep = hl.agg.collect(mt_by_gene.vep))).result()
 
 fields = list(mt_by_gene.vep.transcript_consequences[0])
-# new_csq = mt_by_gene.vep.transcript_consequences.scan(lambda i, j: 
-#                                       hl.str('|').join(hl.array([i]))
-#                                       +','+hl.str('|').join(hl.array([j[col] if col!='Consequence' else 
-#                                                                   hl.str('&').join(j[col]) 
-#                                                                   for col in list(fields)])), '')[-1][1:]
 new_csq = mt_by_gene.vep.transcript_consequences.scan(lambda i, j: i.extend([hl.str('|').join(
                                                       hl.array([j[col] if col != 'Consequence' else 
                                                                 hl.str('&').join(j[col]) 
