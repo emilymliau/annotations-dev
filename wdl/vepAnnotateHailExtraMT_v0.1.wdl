@@ -312,6 +312,7 @@ task annotateSpliceAI {
     import os
     import json
     import argparse
+    import datetime
 
     parser = argparse.ArgumentParser(description='Parse arguments')
     parser.add_argument('-i', dest='mt_uri', help='Input MT file')
