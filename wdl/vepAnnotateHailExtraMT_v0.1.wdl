@@ -365,11 +365,6 @@ task annotateSpliceAI {
         .aggregate_rows(vep = hl.agg.collect(mt_by_gene.vep))).result()
 
     fields = list(mt_by_gene.vep.transcript_consequences[0])
-    # new_csq = mt_by_gene.vep.transcript_consequences.scan(lambda i, j: 
-    #                                     hl.str('|').join(hl.array([i]))
-    #                                     +','+hl.str('|').join(hl.array([j[col] if col!='Consequence' else 
-    #                                                                 hl.str('&').join(j[col]) 
-    #                                                                 for col in list(fields)])), '')[-1][1:]
     new_csq = mt_by_gene.vep.transcript_consequences.scan(lambda i, j: i.extend([hl.str('|').join(
                                                       hl.array([j[col] if col != 'Consequence' else 
                                                                 hl.str('&').join(j[col]) 
