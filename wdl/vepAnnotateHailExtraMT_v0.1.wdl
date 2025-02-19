@@ -15,7 +15,6 @@ struct RuntimeAttr {
 }
 
 workflow vepAnnotateHailExtraMT {
-
     input {
         Array[String] vep_mt_uris
 
@@ -30,7 +29,7 @@ workflow vepAnnotateHailExtraMT {
         String cohort_prefix
         String hail_docker
         
-        String vep_annotate_hail_extra_mt_python_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/vep_annotate_hail_extra_v0.1_dev.py"
+        String vep_annotate_hail_extra_mt_python_script = "https://raw.githubusercontent.com/talkowski-lab/annotations/refs/heads/main/scripts/vep_annotate_hail_extra_mt_v0.1_dev.py"
 
         String genome_build='GRCh38'
 
@@ -366,10 +365,10 @@ task annotateSpliceAI {
 
     fields = list(mt_by_gene.vep.transcript_consequences[0])
     new_csq = mt_by_gene.vep.transcript_consequences.scan(lambda i, j: i.extend([hl.str('|').join(
-                                                      hl.array([j[col] if col != 'Consequence' else 
-                                                                hl.str('&').join(j[col]) 
-                                                                for col in list(fields)]))]), 
-                                                                hl.empty_array(hl.tstr))[-1]
+                                                          hl.array([j[col] if col != 'Consequence' else 
+                                                                    hl.str('&').join(j[col]) 
+                                                                    for col in list(fields)]))]), 
+                                                                    hl.empty_array(hl.tstr))[-1]
                                                                 
     mt_by_gene = mt_by_gene.annotate_rows(CSQ=new_csq)
     mt = mt.annotate_rows(info=mt.info.annotate(CSQ=mt_by_gene.rows()[mt.row_key].CSQ))
