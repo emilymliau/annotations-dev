@@ -74,8 +74,8 @@ task countSNVsandIndels {
 
     command <<<
         set -eou pipefail
-        grep -v "^#" ~{input_vcf} | awk 'length($4) == 1 && length($5) == 1' | wc -l > snv_counts.txt
-        grep -v "^#" ~{input_vcf} | awk 'length($4) != length($5)' | wc -l > indel_counts.txt
+        zcat ~{input_vcf} | grep -v "^#" | awk 'length($4) == 1 && length($5) == 1' | wc -l > snv_counts.txt
+        zcat ~{input_vcf} | grep -v "^#" | awk 'length($4) != length($5)' | wc -l > indel_counts.txt
     >>>
 
     output {
