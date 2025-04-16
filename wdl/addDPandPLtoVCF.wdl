@@ -11,18 +11,17 @@ struct RuntimeAttr {
 
 workflow addDPandPLtoVCF {
     input {
-        # File vcf_shard
-        Array[File] vcf_shards
+        Array[File] vcf_files
         String add_dp_and_pl_python_script
         String hail_docker
         String genome_build='GRCh38'
         RuntimeAttr? runtime_attr_override
     }
 
-    scatter (vcf_shard in vcf_shards) {
+    scatter (vcf_file in vcf_files) {
         call addDPandPL {
         input:
-            vcf_shard=vcf_shard,
+            vcf_file=vcf_file,
             add_dp_and_pl_python_script=add_dp_and_pl_python_script,
             hail_docker=hail_docker,
             genome_build=genome_build,
@@ -31,22 +30,20 @@ workflow addDPandPLtoVCF {
     }
 
     output {
-        # File output_vcf = addDPandPL.output_vcf
-        # File output_vcf_idx = addDPandPL.output_vcf_idx
-        Array[File] reheadered_vcf_files = addDPandPL.reheadered_vcf
-        Array[File] reheadered_vcf_indices = addDPandPL.reheadered_vcf_index
+        Array[File] reannotated_vcf_files = addDPandPL.reannotated_vcf
+        Array[File] reannotated_vcf_indices = addDPandPL.reannotated_vcf_index
     }
 }
 
 task addDPandPL {
     input {
-        File vcf_shard
+        File vcf_file
         String add_dp_and_pl_python_script
         String hail_docker
         String genome_build
         RuntimeAttr? runtime_attr_override
     }
-    Float input_size = size(vcf_shard, 'GB')
+    Float input_size = size(vcf_file, 'GB')
     Float base_disk_gb = 10.0
     Float input_disk_scale = 5.0
 
@@ -74,28 +71,18 @@ task addDPandPL {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String output_filename = sub(basename(vcf_shard), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
-
-    # String input_basename = basename(vcf_shard)
-    # String output_extension = if (sub(input_basename, "\\.vcf\\.bgz$", "") != input_basename) ".DP.vcf.bgz" else if (sub(input_basename, "\\.vcf\\.gz$", "") != input_basename) ".DP.vcf.gz" else ""
-    # String output_extension = select_first([if sub(input_basename, "\\.vcf\\.bgz$", "") != input_basename then ".DP.PL.vcf.bgz" else None,
-                                            # if sub(input_basename, "\\.vcf\\.gz$", "") != input_basename then ".DP.PL.vcf.gz" else None])
-
-    # String output_filename = sub(input_basename, "\\.vcf\\.(bgz|gz)$", "") + output_extension
-
-    # String filename = basename(vcf_shard)
-    # String prefix = if (sub(filename, "\\.gz", "")!=filename) then basename(vcf_shard, ".vcf.gz") else basename(vcf_shard, ".vcf.bgz")
-
+    String output_filename = sub(basename(vcf_file), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
+    
     command <<<
         set -eou pipefail
         curl ~{add_dp_and_pl_python_script} > add_dp_and_pl.py
-        python3 add_dp_and_pl.py ~{vcf_shard} ~{output_filename} ~{cpu_cores} ~{memory} ~{genome_build}
+        python3 add_dp_and_pl.py ~{vcf_file} ~{output_filename} ~{cpu_cores} ~{memory} ~{genome_build}
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
     output {
-        File reheadered_vcf = output_filename
-        File reheadered_vcf_index = output_filename + '.tbi'
+        File reannotated_vcf = output_filename
+        File reannotated_vcf_index = output_filename + '.tbi'
         File hail_log = "hail_log.txt"
     }
 }

@@ -32,24 +32,24 @@ mt = mt.annotate_entries(
 
 # drop existing DP & PL fields for testing
 if 'DP' in mt.entry:
-    mt = mt.drop(mt.DP) # format-level DP
+    mt = mt.drop(mt.DP) # FORMAT-level DP
 if 'DP' in mt.row:
-    mt = mt.drop(mt.info.DP) # info-level DP
+    mt = mt.drop(mt.info.DP) # INFO-level DP
 if 'PL' in mt.entry:
-    mt = mt.drop(mt.PL) # format-level PL
+    mt = mt.drop(mt.PL) # FORMAT-level PL
 
 # calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...calculating FORMAT-level DP")
 mt = mt.annotate_entries(DP=hl.sum(mt.AD))
 header['format']['DP'] = {'Description': 'Approximate read depth, estimated as sum of AD per sample.', 'Number': '1', 'Type': 'Integer'}
+print(f"...FORMAT-level DP calculations completed at: {datetime.datetime.now()}")
 
 # calculate INFO-level DP (sum of AD fields across samples)
 print(f"...calculating INFO-level DP")
-# mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(mt.DP)))
 mt = mt.annotate_rows(info=mt.info.annotate(DP=hl.agg.sum(hl.sum(mt.AD))))
 
 header['info']['DP'] = {'Description': 'Approximate read depth, estimated as sum of AD across samples.', 'Number': '1', 'Type': 'Integer'}
-print(f"...DP calculations completed at: {datetime.datetime.now()}")
+print(f"...INFO-level DP calculations completed at: {datetime.datetime.now()}")
 
 # calculate FORMAT-level PL
 print(f"...calculating FORMAT-level PL")
@@ -62,7 +62,7 @@ mt = mt.annotate_entries(PL=hl.case()
                                 [mt.GQ, 0, hl.max(mt.GQ, 3*(mt.AD[0] - mt.AD[1]))] )
                             .default(hl.array([hl.missing('int')])))
 header['format']['PL'] = {'Description': 'Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification (estimated using GQ).', 'Number': 'G', 'Type': 'Integer'}
-print(f"...PL calculations completed at: {datetime.datetime.now()}")
+print(f"...FORMAT-level PL calculations completed at: {datetime.datetime.now()}")
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"...VCF export completed at: {datetime.datetime.now()}")
