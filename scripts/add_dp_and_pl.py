@@ -66,4 +66,4 @@ print(f"...PL calculations completed at: {datetime.datetime.now()}")
 
 hl.export_vcf(mt, output_vcf, metadata=header, tabix=True)
 print(f"...VCF export completed at: {datetime.datetime.now()}")
-print("Output VCF reannotated with DP & PL: ", output_vcf)
+print("VEP-annotated VCF, reannotated with DP & PL: ", output_vcf)
