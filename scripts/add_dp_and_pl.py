@@ -30,11 +30,13 @@ mt = mt.annotate_entries(
             mt.GT)
 )
 
-# drop existing DP fields for testing
+# drop existing DP & PL fields for testing
 if 'DP' in mt.entry:
-    mt = mt.drop(mt.DP)
+    mt = mt.drop(mt.DP) # format-level DP
 if 'DP' in mt.row:
-    mt = mt.drop(mt.info.DP)
+    mt = mt.drop(mt.info.DP) # info-level DP
+if 'PL' in mt.entry:
+    mt = mt.drop(mt.PL) # format-level PL
 
 # calculate FORMAT-level DP (sum of AD fields per sample)
 print(f"...calculating FORMAT-level DP")
