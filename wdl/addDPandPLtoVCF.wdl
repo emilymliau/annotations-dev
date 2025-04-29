@@ -94,8 +94,8 @@ task addDPandPL {
     >>>
 
     output {
-        File reannotated_vcf = "~{output_filename}.bgz"
-        File reannotated_vcf_index = "~{output_filename}.bgz.tbi"
+        File reannotated_vcf = "~{output_filename}"
+        File reannotated_vcf_index = "~{output_filename}.tbi"
         File hail_log = "hail_log.txt"
     }
 }
