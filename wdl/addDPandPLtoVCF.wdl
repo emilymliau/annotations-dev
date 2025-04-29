@@ -89,7 +89,7 @@ task addDPandPL {
         set -eou pipefail
         curl ~{add_dp_and_pl_python_script} > add_dp_and_pl.py
         python3 add_dp_and_pl.py ~{vcf_file} ~{output_filename} ~{cpu_cores} ~{memory} ~{genome_build}
-        bgzip -c ~{output_filename} > ~{output_filename}.bgz
+        # bgzip -c ~{output_filename} > ~{output_filename}.bgz
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
