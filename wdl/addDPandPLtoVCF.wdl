@@ -71,28 +71,31 @@ task addDPandPL {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    # String output_filename = sub(basename(vcf_file), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
     String base = basename(vcf_file)
 
     String output_filename =
-    if base == sub(base, ".g.vcf.gz$", "") + ".g.vcf.gz" then sub(base, ".g.vcf.gz$", ".DP.PL.g.vcf.gz")
-    else if base == sub(base, ".gvcf.gz$", "") + ".gvcf.gz" then sub(base, ".gvcf.gz$", ".DP.PL.gvcf.gz")
-    else if base == sub(base, ".vcf.gz$", "") + ".vcf.gz" then sub(base, ".vcf.gz$", ".DP.PL.vcf.gz")
-    else if base == sub(base, ".g.vcf$", "") + ".g.vcf" then sub(base, ".g.vcf$", ".DP.PL.g.vcf")
-    else if base == sub(base, ".gvcf$", "") + ".gvcf" then sub(base, ".gvcf$", ".DP.PL.gvcf")
-    else if base == sub(base, ".vcf$", "") + ".vcf" then sub(base, ".vcf$", ".DP.PL.vcf")
-    else base + ".DP.PL"
-    
+    if base == sub(base, ".g.vcf.gz$", "") + ".g.vcf.gz" then sub(base, ".g.vcf.gz$", ".DP.PL.g.vcf.bgz")
+    else if base == sub(base, ".gvcf.gz$", "") + ".gvcf.gz" then sub(base, ".gvcf.gz$", ".DP.PL.gvcf.bgz")
+    else if base == sub(base, ".vcf.gz$", "") + ".vcf.gz" then sub(base, ".vcf.gz$", ".DP.PL.vcf.bgz")
+    else if base == sub(base, ".g.vcf.bgz$", "") + ".g.vcf.bgz" then sub(base, ".g.vcf.bgz$", ".DP.PL.g.vcf.bgz")
+    else if base == sub(base, ".gvcf.bgz$", "") + ".gvcf.bgz" then sub(base, ".gvcf.bgz$", ".DP.PL.gvcf.bgz")
+    else if base == sub(base, ".vcf.bgz$", "") + ".vcf.bgz" then sub(base, ".vcf.bgz$", ".DP.PL.vcf.bgz")
+    else if base == sub(base, ".g.vcf$", "") + ".g.vcf" then sub(base, ".g.vcf$", ".DP.PL.g.vcf.bgz")
+    else if base == sub(base, ".gvcf$", "") + ".gvcf" then sub(base, ".gvcf$", ".DP.PL.gvcf.bgz")
+    else if base == sub(base, ".vcf$", "") + ".vcf" then sub(base, ".vcf$", ".DP.PL.vcf.bgz")
+    else base + ".DP.PL.bgz"
+
     command <<<
         set -eou pipefail
         curl ~{add_dp_and_pl_python_script} > add_dp_and_pl.py
         python3 add_dp_and_pl.py ~{vcf_file} ~{output_filename} ~{cpu_cores} ~{memory} ~{genome_build}
+        bgzip -c ~{output_filename} > ~{output_filename}.bgz
         cp $(ls . | grep hail*.log) hail_log.txt
     >>>
 
     output {
-        File reannotated_vcf = output_filename
-        File reannotated_vcf_index = output_filename + '.tbi'
+        File reannotated_vcf = "~{output_filename}.bgz"
+        File reannotated_vcf_index = "~{output_filename}.bgz.tbi"
         File hail_log = "hail_log.txt"
     }
 }
