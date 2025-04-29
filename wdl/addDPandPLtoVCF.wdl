@@ -72,7 +72,16 @@ task addDPandPL {
     }
 
     # String output_filename = sub(basename(vcf_file), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
-    String output_filename = sub(basename(vcf_file), "(\\.g?\\.?vcf)(\\.b?gz)?$", ".DP.PL\\1\\2")
+    String base = basename(vcf_file)
+
+    String output_filename =
+    if base == sub(base, ".g.vcf.gz$", "") + ".g.vcf.gz" then sub(base, ".g.vcf.gz$", ".DP.PL.g.vcf.gz")
+    else if base == sub(base, ".gvcf.gz$", "") + ".gvcf.gz" then sub(base, ".gvcf.gz$", ".DP.PL.gvcf.gz")
+    else if base == sub(base, ".vcf.gz$", "") + ".vcf.gz" then sub(base, ".vcf.gz$", ".DP.PL.vcf.gz")
+    else if base == sub(base, ".g.vcf$", "") + ".g.vcf" then sub(base, ".g.vcf$", ".DP.PL.g.vcf")
+    else if base == sub(base, ".gvcf$", "") + ".gvcf" then sub(base, ".gvcf$", ".DP.PL.gvcf")
+    else if base == sub(base, ".vcf$", "") + ".vcf" then sub(base, ".vcf$", ".DP.PL.vcf")
+    else base + ".DP.PL"
     
     command <<<
         set -eou pipefail
