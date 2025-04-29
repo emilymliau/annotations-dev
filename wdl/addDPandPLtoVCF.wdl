@@ -71,7 +71,8 @@ task addDPandPL {
         bootDiskSizeGb: select_first([runtime_override.boot_disk_gb, runtime_default.boot_disk_gb])
     }
 
-    String output_filename = sub(basename(vcf_file), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
+    # String output_filename = sub(basename(vcf_file), ".vcf.bgz", "") + ".DP.PL.vcf.bgz"
+    String output_filename = sub(basename(vcf_file), "(\\.g?\\.?vcf)(\\.b?gz)?$", ".DP.PL\\1\\2")
     
     command <<<
         set -eou pipefail
